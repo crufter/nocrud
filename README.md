@@ -1,16 +1,16 @@
 noCrud
 ===
 
-noCrud is an framework supporting both traditional and real time web development.  
-It is inspired by REST, RPC, and a couple of other sources.  
+noCrud is a framework supporting both traditional and real time web development.  
+It is inspired by REST, RPC, MVC, a couple of other buzzwords, and reggae music.  
 As a basic philosophy it employs "Configuration over code."  
 
-Instead of coding by hand or code generation, nocrud feeds on configuration data, it acts like a DSL execution engine.  
-This makes interchanging site setups easy and safe.
+Instead of coding by hand or code generation, noCrud feeds on configuration data, it acts like a DSL execution engine.  
+This makes interchanging site setups easy and safe, since your whole application is drived by the Options document (optdoc for short), which is basically a JSON map.
 
-Configuration resides in an Options document (optdoc for short) in the database, which is basically a JSON map.
+The framework itself is a collection of interfaces (see /frame/interfaces), which can be accessed by the modules (/modules).
 
-The framework itself is a collection of interfaces (see /frame/interfaces), which can be accessed by the modules.
+Expect the website soon at www.nocrud.com
 
 Getting started
 ---
@@ -43,7 +43,7 @@ Basics
 
 ### Fundamental concepts
 
-You can make your way trough nocrud without fancy GUI navigation by understanding two of the main concepts: **resources** and **verbs** acting on them.
+You can make your way trough noCrud without fancy GUI navigation by understanding two of the main concepts: **resources** and **verbs** acting on them.
 
 #### Resources
 
@@ -114,7 +114,7 @@ We have just deleted all cars with the make renault, and all customers who are V
 
 #### The Codes
 
-The nice thing about nocrud and it's modules that they work with filters, so once we write our code, it will be **collection independent**,  
+The nice thing about noCrud and it's modules that they work with filters, so once we write our code, it will be **collection independent**,  
 and we dont have to write different methods like ***DeleteById***, ***DeleteByName***, etc... The Verb issued is entirely decoupled from the subject (the resources) it
 acts on.
 
