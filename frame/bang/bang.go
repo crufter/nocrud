@@ -49,7 +49,7 @@ func New(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w http
 		hookz = map[string]interface{}{}
 	}
 	hoo := hooks.New(hookz, mod.NewModule)
-	datab := db.New(dbConn, opts, hoo)
+	datab := db.New(session, dbConn, opts, hoo)
 	usrFilter, err := filter.NewSimple(set.New(dbConn, "users"), nil)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func NewWS(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w ht
 		hookz = map[string]interface{}{}
 	}
 	hoo := hooks.New(hookz, mod.NewModule)
-	datab := db.New(dbConn, opts, hoo)
+	datab := db.New(session, dbConn, opts, hoo)
 	usrFilter, err := filter.NewSimple(set.New(dbConn, "users"), nil)
 	if err != nil {
 		return nil, err

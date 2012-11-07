@@ -180,6 +180,13 @@ type Channel interface {
 	HasX(int) bool
 }
 
+// Database session.
+// Ugly circularity between Session and Db.
+type Session interface {
+	// Select database.
+	Db(string) (Db, error)
+}
+
 // Db represents a database.
 // The NewFilter gives you filtered access to a certain collection.
 // (Except if you have no rights at all, then gives error)
@@ -187,6 +194,7 @@ type Db interface {
 	NewFilter(string, map[string]interface{}) (Filter, error)
 	ToId(string) (Id, error)
 	NewId() Id
+	Session() (Session, error)
 	// Resolve(map[string]interface{}, ...string) error
 }
 

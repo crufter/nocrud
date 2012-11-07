@@ -45,7 +45,7 @@ func main() {
 	db := session.DB(config.DBName)
 	defer session.Close()
 	fmt.Println("Waiting for websockets connections.")
-	http.HandleFunc("/ws/users/webs", func(w http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/ws/", func(w http.ResponseWriter, req *http.Request) {
 		defer printErr(w)
 		wsHandler := func(ws *websocket.Conn) {
 			defer ws.Close()
