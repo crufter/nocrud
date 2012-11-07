@@ -182,7 +182,8 @@ func (c *C) ActionName() {
 
 ### Exporting your module
 
-You can export your controller object by creating /frame/mods/mymodule.go with the following contents:
+You can export one object from your module, by creating /frame/mods/mymodule.go with the following contents:
+
 ```go
 package mod
 
@@ -197,7 +198,7 @@ Exporting may get automated away later.
 
 ### Assigning your modules to resources
 
-After you exported your module, you can assign your module to resources (nouns) in the options document.
+After you exported your module, you can assign your module to resources (nouns) in the optdoc.
 
 ```js
 {
@@ -214,7 +215,43 @@ After you exported your module, you can assign your module to resources (nouns) 
 Multiple modules may be assigned to the resources. You can think of modules as a collection of verbs which can act on a given resource.  
 When multiple modules are assigned to a resource, and more than one of them contains a given verb, the control will be routed to the first one in the list.
 
-### The options document.
+### Hooks
+
+The methods of your exported object can act as hooks.  
+One can call a hook by:
+```go
+a := 12
+b := "x"
+// ctx is iface.Context
+ctx.Hooks().Select("aPlace").Fire(a, b)
+```
+
+Then, if you have an exported method of mymodule:
+```go
+func (c *C) MethodNameNotImportant(i int, s string) {
+}
+```
+
+You can glue the two together in the options document:
+```js
+{
+	"Hooks": {
+		"aPlace": [ [ "mymodule", "MethodNameNotImportant"] ]
+	}
+}
+```
+
+As we can see method name is not important, but, when the method name is identical to the name of the hook, we don't have to specify it:
+```js
+{
+	"Hooks": {
+		"aPlace": [ "mymodule" ]
+	}
+}
+```
+
+The options document.
+---
 
 The options document (optdoc for short) drives your whole application.  
 
