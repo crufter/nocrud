@@ -150,13 +150,25 @@ func GetNouns(odoc iface.NestedData) map[string]interface{} {
 	opt_def := map[string]interface{}{
 		"composed_of": []interface{}{
 			"jsonedit",
-			"installer",
+		},
+	}
+	term_def := map[string]interface{}{
+		"composed_of": []interface{}{
+			"terminal",
+		},
+		"verbs": map[string]interface{}{
+			"Execute": map[string]interface{}{
+				"input": map[string]interface{}{
+					"script": 1,
+				},
+			},
 		},
 	}
 	nouns, ok := odoc.GetM("nouns")
 	if !ok {
 		nouns = map[string]interface{}{
 			"options": opt_def,
+			"terminal": term_def,
 		}
 	}
 	if _, ok := nouns["options"]; !ok {
