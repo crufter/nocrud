@@ -5,6 +5,7 @@ import(
 	"github.com/opesun/slugify"
 	"labix.org/v2/mgo/bson"
 	"strings"
+	"fmt"
 )
 
 type C struct {
@@ -95,7 +96,7 @@ func (c *C) RegenerateFulltext(a iface.Filter) error {
 	return a.Iterate(cb)
 }
 
-func GenerateKeywords(s string) []string {
+func generateKeywords(s string) []string {
 	split := strings.Split(s, " ")
 	slugified := []string{}
 	for _, v := range split {
@@ -109,7 +110,7 @@ func GenerateKeywords(s string) []string {
 // We could write regexes which searches in the middle of the words too, but that query could not uzilize the btree indexes of mongodb.
 // This solution must be efficient, assuming mongodb does the expected sane things: utilizing indexes with ^ regexes, "$and" queries and arrays.
 func GenerateQuery(s string) []interface{} {
-	sl := GenerateKeywords(s)
+	sl := generateKeywords(s)
 	and := []interface{}{}
 	for _, v := range sl {
 		and = append(and, map[string]interface{}{
@@ -128,4 +129,26 @@ func (c *C) ProcessMap(inp map[string]interface{}) {
 	}
 	inp["$and"] = GenerateQuery(val)
 	delete(inp, "search")
+}
+
+func (c *C) Install(o iface.Document, s string) error {
+	upd := map[string]interface{}{
+		"$addToSet": map[string]interface{}{
+			fmt.Sprintf("Hooks.%vInserted", s): []interface{}{"fulltext", "SaveFulltext"},
+			fmt.Sprintf("Hooks.%vUpdated", s): []interface{}{"fulltext", "SaveFulltext"},
+			"Hooks.ProcessMap": "fulltext",
+		},
+	}
+	return o.Update(upd)
+}
+
+func (c *C) Uninstall(o iface.Document, s string) error {
+	upd := map[string]interface{}{
+		"$pull": map[string]interface{}{
+			fmt.Sprintf("Hooks.%vInserted", s): []interface{}{"fulltext", "SaveFulltext"},
+			fmt.Sprintf("Hooks.%vUpdated", s): []interface{}{"fulltext", "SaveFulltext"},
+			"Hooks.ProcessMap": "fulltext",
+		},
+	}
+	return o.Update(upd)
 }

@@ -3,7 +3,6 @@ package filter
 import(
 	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/misc/convert"
 	"github.com/opesun/nocrud/frame/impl/set/mongodb"	// ...
 	"github.com/opesun/nocrud/frame/impl/document"
 	"github.com/opesun/sanitize"
@@ -104,10 +103,7 @@ func processMap(inp map[string]interface{}, hooks iface.Hooks) *data {
 	}
 	sch := map[string]interface{}{
 		//"parentf": 1,
-		"sort": map[string]interface{}{
-			"slice": true,
-			"type": "string",
-		},
+		"sort": 1,
 		"skip": int_sch,
 		"limit": int_sch,
 		"page": int_sch,
@@ -127,9 +123,6 @@ func processMap(inp map[string]interface{}, hooks iface.Hooks) *data {
 	//if dat["parentf"] != nil {
 	//	d.parentField = dat["parentf"].(string)
 	//}
-	if dat["sort"] != nil {
-		mods.sort = convert.ToStringSlice(dat["sort"].([]interface{}))
-	}
 	if dat["skip"] != nil {
 		mods.skip = int(dat["skip"].(int64))
 	}

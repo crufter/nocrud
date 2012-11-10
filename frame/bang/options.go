@@ -69,7 +69,10 @@ func queryOptions(db *mgo.Database, cache_it bool) (map[string]interface{}, stri
 		var fresh_opt interface{}
 		if len(res) == 0 {
 			fresh_opt = m{}
-			db.C("options").Insert(m{"created":time.Now().UnixNano()})		// Intentionally skipping error here.
+			// Intentionally skipping error here.
+			db.C("options").Insert(m{
+				"created": time.Now().UnixNano(),
+			})
 		} else {
 			fresh_opt = res[0]
 		}

@@ -86,7 +86,7 @@ func (m InstanceCacher) Instance() iface.Instance {
 	ins, has := m.cache[m.name]
 	if !has {
 		if !m.Exists() {
-			panic(fmt.Sprintf("Module %v modname does not exist.", m.name))
+			panic(fmt.Sprintf("Module %v does not exist.", m.name))
 		}
 		insta := m.Module.Instance()
 		m.initer(insta)

@@ -148,7 +148,10 @@ func OnlyAdmin(u iface.User) {
 // If the opt doc is empty, it returns a default nouns configoration.
 func GetNouns(odoc iface.NestedData) map[string]interface{} {
 	opt_def := map[string]interface{}{
-		"composed_of": []interface{}{"jsonedit"},
+		"composed_of": []interface{}{
+			"jsonedit",
+			"installer",
+		},
 	}
 	nouns, ok := odoc.GetM("nouns")
 	if !ok {

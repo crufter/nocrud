@@ -5,10 +5,11 @@ import(
 	"strings"
 	"fmt"
 	"encoding/json"
+	"strconv"
 )
 
 // After running a background operation this either redirects with data in url paramters or prints out the json encoded result.
-func (t *Top) actionResponse(err error, action_name string) {
+func (t *Top) actionResponse(err error, action_name string, nonerrs []interface{}) {
 	ctx := t.ctx
 	redir := ctx.NonPortable().ComingFrom()
 	if ch := ctx.Channels().Select("redirect"); ch.HasData() {
@@ -21,6 +22,13 @@ func (t *Top) actionResponse(err error, action_name string) {
 		cont = cont_sl[0].(map[string]interface{})
 	} else {
 		cont = map[string]interface{}{}
+	}
+	for i, v := range nonerrs {
+		if i == 0 {
+			cont["main"] = v
+		} else {
+			cont["main"+strconv.Itoa(i)] = v
+		}
 	}
 	redir = appendParams(redir, action_name, err, cont)
 	modif := ctx.Options().Modifiers()

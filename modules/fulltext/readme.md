@@ -23,3 +23,9 @@ To add a special kind of field "search" to filters:
 	}
 }
 ```
+
+If you have the terminal installed, just issue
+
+```
+install "articles" "fulltext"
+```
