@@ -105,6 +105,16 @@ func (e *Hooks) Module(modname string) iface.Module {
 	}
 }
 
+func (e *Hook) HasSubscribers() bool {
+	subscribed := e.subscribers()
+	return len(subscribed) > 0
+}
+
+func (e *Hook) SubscriberCount() int {
+	subscribed := e.subscribers()
+	return len(subscribed)
+}
+
 // Fire calls hooks subscribed to Hookname, but does not case about their return values.
 func (e *Hook) Fire(params ...interface{}) {
 	e.iterate(e.Hookname, nil, params...)

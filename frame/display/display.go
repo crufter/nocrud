@@ -11,6 +11,8 @@ import (
 	"github.com/russross/blackfriday"
 	"html/template"
 	"strings"
+	"io"
+	"bytes"
 )
 
 type Display struct {
@@ -24,6 +26,69 @@ func New(ctx iface.Context) *Display {
 }
 
 func (d *Display) Do(files []string) error {
+	point := d.decidePoint(files)
+	d.publishForm()
+	runDisplayHook(d.ctx.Conducting().Hooks())
+	err := d.localizeContext()
+	if err != nil {
+		return err
+	}
+	displ := d.ctx.Display()
+	modif := d.ctx.Options().Modifiers()
+	if modif.Exists("json") {
+		return d.putJSON()
+	}
+	file, err := d.getFile(point)
+	if err != nil {
+		return err
+	}
+	if modif.Exists("src") {
+		return displ.Type("html").Write([]byte(file))
+	}
+	if d.ctx.Options().Modifiers().Exists("json") {
+		return d.putJSON()
+	}
+	return d.execute(displ.Writer(), file)
+}
+
+func (d *Display) publishForm() {
+	d.ctx.ViewContext().Publish("form", d.ctx.NonPortable().Params())
+}
+
+func (d *Display) localizeContext() error {
+	loc, err := display_model.LoadLocStrings(d.ctx.FileSys(), d.ctx.ViewContext(), d.ctx.User().Languages()) // TODO: think about errors here.
+	if err != nil {
+		return err
+	}
+	d.ctx.ViewContext().Publish("loc", loc)
+	return nil
+}
+
+func runDisplayHook(hooks iface.Hooks) {
+	defer func(){
+		r := recover()
+		if r != nil {
+			fmt.Println(r)
+		}
+	}()
+	hooks.Select("BeforeDisplay").Fire()
+}
+
+func (d *Display) ToString(files []string) (string, error) {
+	point := existing(d.ctx.FileSys(), files)
+	file, err := d.getFile(point)
+	if err != nil {
+		return "", err
+	}
+	buf := &bytes.Buffer{}
+	err = d.execute(buf, file)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func (d *Display) decidePoint(files []string) string {
 	var point string
 	if len(files) > 0 {
 		point = existing(d.ctx.FileSys(), files)
@@ -35,28 +100,7 @@ func (d *Display) Do(files []string) error {
 			point = p
 		}
 	}
-	d.ctx.ViewContext().Publish("form", d.ctx.NonPortable().Params())
-	beforeDisplay(d.ctx.Conducting().Hooks())
-	loc, err := display_model.LoadLocStrings(d.ctx.FileSys(), d.ctx.ViewContext(), d.ctx.User().Languages()) // TODO: think about errors here.
-	if err != nil {
-		return err
-	}
-	d.ctx.ViewContext().Publish("loc", loc)
-	if d.ctx.Options().Modifiers().Exists("json") {
-		d.putJSON()
-		return nil
-	}
-	return d.file(point)
-}
-
-func beforeDisplay(hooks iface.Hooks) {
-	defer func(){
-		r := recover()
-		if r != nil {
-			fmt.Println(r)
-		}
-	}()
-	hooks.Select("BeforeDisplay").Fire()
+	return point
 }
 
 func merge(a interface{}, b map[string]interface{}) map[string]interface{} {
@@ -94,69 +138,36 @@ func validFormat(format string) bool {
 	return false
 }
 
-// Does format conversions.
-// Currently only: markdown -> html
-func getFileAndConvert(fs iface.FileSys, filepath string) ([]byte, error) {
-	file, err := scut.GetFile(fs, filepath)
-	if err != nil {
-		return nil, err
+func (d *Display) publishLangs() {
+	langs := []interface{}{}
+	for _, v := range d.ctx.User().Languages() {
+		langs = append(langs, v)
 	}
-	spl := strings.Split(filepath, ".")
-	extension := spl[len(spl)-1]
-	// In tpl files the first line contains the extension information, like "--md". (An entry point can't change it's extension.)
-	if extension == "tpl" {
-		strfile := string(file)
-		newline_pos := strings.Index(strfile, "\n")
-		if newline_pos > 3 && validFormat(strfile[2:newline_pos-1]) { // "--" plus at least 1 characer.
-			extension = strfile[2 : newline_pos-1]
-			file = file[newline_pos:]
-		}
-	}
-	switch extension {
-	case "md":
-		file = blackfriday.MarkdownCommon(file)
-	}
-	//file = append([]byte(fmt.Sprintf("<!-- %v/%v. -->", root, fi)), file...)
-	//file = append(file, []byte(fmt.Sprintf("<!-- /%v/%v -->", root, fi))...)
-	return file, nil
+	d.ctx.ViewContext().Publish("langs", langs)
 }
 
 // Tries to dislay a template file.
-func (d *Display) file(filepath string) error {
-	src := false
-	fileContents, err := require.R("", filepath + ".tpl",
+func (d *Display) getFile(filepath string) (string, error) {
+	return require.R("", filepath + ".tpl",
 	func(root, fi string) ([]byte, error) {
 		return getFileAndConvert(d.ctx.FileSys(), fi)
 	})
-	if err != nil {
-		return fmt.Errorf("Cant find template file %v.", filepath)
-	}
-	if src {
-		displ:= d.ctx.Display()
-		displ.Type("html").Write([]byte(fileContents))
-	}
-	err = d.prepareAndExec(fileContents)
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 // Loads localization, template functions and executes the template.
-func (d *Display) prepareAndExec(fileContents string) error {
+func (d *Display) execute(wr io.Writer, fileContents string) error {
 	loc, err := display_model.LoadLocTempl(d.ctx.FileSys(), fileContents, d.ctx.User().Languages()) // TODO: think about errors here.
 	if err != nil {
 		return err
 	}
-	d.ctx.ViewContext().Publish("loc", loc)
+	vctx := d.ctx.ViewContext()
+	vctx.Publish("loc", loc)
 	funcMap := template.FuncMap(builtins(d.ctx))
 	t, err := template.New("tpl").Funcs(funcMap).Parse(fileContents)
 	if err != nil {
 		return err
 	}
-	displ := d.ctx.Display()
-	displ.Type("html")
-	return t.Execute(displ.Writer(), d.ctx.ViewContext().Get()) // TODO: watch for errors in execution.
+	return t.Execute(wr, vctx.Get()) // TODO: watch for errors in execution.
 }
 
 // Prints all available data to http response as a JSON.
@@ -179,10 +190,32 @@ func (d *Display) putJSON() error {
 // This is called if an error occured in a front hook.
 func (d *Display) Error(err error) error {
 	d.ctx.ViewContext().Publish("error", err)
-	if d.ctx.Options().Modifiers().Exists("json") {
-		return d.putJSON()
+	return d.Do([]string{"error"})
+}
+
+// Does format conversions.
+// Currently only: markdown -> html
+func getFileAndConvert(fs iface.FileSys, filepath string) ([]byte, error) {
+	file, err := scut.GetFile(fs, filepath)
+	if err != nil {
+		return nil, err
 	}
-	return d.file("error")
+	spl := strings.Split(filepath, ".")
+	extension := spl[len(spl)-1]
+	// In tpl files the first line contains the extension information, like "--md". (An entry point can't change it's extension.)
+	if extension == "tpl" {
+		strfile := string(file)
+		newline_pos := strings.Index(strfile, "\n")
+		if newline_pos > 3 && validFormat(strfile[2:newline_pos-1]) { // "--" plus at least 1 characer.
+			extension = strfile[2 : newline_pos-1]
+			file = file[newline_pos:]
+		}
+	}
+	switch extension {
+	case "md":
+		file = blackfriday.MarkdownCommon(file)
+	}
+	return file, nil
 }
 
 func existing(f iface.FileSys, s []string) string {

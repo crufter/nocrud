@@ -267,6 +267,20 @@ func elem(s interface{}, memb int64) interface{} {
 	return "Error: unkown slice type."
 }
 
+func inSlice(s []interface{}, b interface{}) bool {
+	for _, v := range s {
+		if reflect.DeepEqual(v, b) {
+			return true
+		}
+	}
+	return false
+}
+
+// type hook struct {}
+
+func hook(hookname string) {
+}
+
 // We must recreate this map each time because map write is not threadsafe.
 // Write will happen when a hook modifies the map (hook call is not implemented yet).
 func builtins(ctx iface.Context) map[string]interface{} {
@@ -320,6 +334,8 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			}
 			return pager(ctx, pagestr, count, limited)
 		},
+		"in_slice": inSlice,
+		//"hook": hook,
 	}
 	ctx.Conducting().Hooks().Select("AddTemplateBuiltin").Fire(ret)
 	return ret

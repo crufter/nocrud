@@ -34,6 +34,8 @@ type Hooks interface {
 // With Iterate, one can provide a stop function as a first parameter, which will recieve the output of all hooks.
 // If the stop function returns true, the execution of subscribers stop.
 type Hook interface {
+	HasSubscribers() bool
+	SubscriberCount() int
 	Fire(params ...interface{})
 	Iterate(stopfunc interface{}, params ...interface{})
 }
