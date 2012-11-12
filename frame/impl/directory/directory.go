@@ -6,7 +6,6 @@ import(
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/impl/file"
 	"path/filepath"
-	"fmt"
 )
 
 type Directory struct {
@@ -84,8 +83,14 @@ func (d *Directory) Create() error {
 	return os.MkdirAll(d.path, os.ModePerm)
 }
 
-func (d *Directory) Rename(s string) error {
-	return fmt.Errorf("!")
+func (d *Directory) Rename(newName string) error {
+	newPath := filepath.Join(filepath.Dir(d.path), newName)
+	err := os.Rename(d.path, newPath)
+	if err != nil {
+		return err
+	}
+	d.path = newPath
+	return nil
 }
 
 func (d *Directory) Directory(s ...string) iface.Directory {

@@ -3,8 +3,7 @@ package file
 import(
 	"os"
 	"io/ioutil"
-	"fmt"
-	"strings"
+	"path/filepath"
 )
 
 type File struct {
@@ -15,6 +14,10 @@ func New(path string) *File {
 	return &File{
 		path,
 	}
+}
+
+func (f *File) Create() error {
+	return ioutil.WriteFile(f.path, []byte{}, os.ModePerm)
 }
 
 func (f *File) Exists() (bool, error) {
@@ -40,11 +43,17 @@ func (f *File) Remove() error {
 	return os.Remove(f.path)
 }
 
-func (f *File) Rename(s string) error {
-	return fmt.Errorf("!")
+// Copied from github.com/opesun/frame/impl/directory ... what could I do...
+func (f *File) Rename(newName string) error {
+	newPath := filepath.Join(filepath.Dir(f.path), newName)
+	err := os.Rename(f.path, newPath)
+	if err != nil {
+		return err
+	}
+	f.path = newPath
+	return nil
 }
 
 func (f *File) Name() string {
-	spl := strings.Split(f.path, "/")
-	return spl[len(spl)-1]
+	return filepath.Base(f.path)
 }

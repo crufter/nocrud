@@ -245,6 +245,7 @@ type Directory interface {
 
 // We will have to adjust this to allow handling large files.
 type File interface {
+	Create() error
 	Exists() (bool, error)
 	Write([]byte) error
 	Read() ([]byte, error)
