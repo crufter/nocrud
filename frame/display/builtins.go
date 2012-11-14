@@ -276,9 +276,34 @@ func inSlice(s []interface{}, b interface{}) bool {
 	return false
 }
 
-// type hook struct {}
+type hook struct {
+	ctx			iface.Context
+	hook		iface.Hook
+	hookName	string
+}
 
-func hook(hookname string) {
+func (h *hook) Has() bool {
+	return h.hook.HasSubscribers()
+}
+
+func (h *hook) Fire(args ...interface{}) (string, error) {
+	if !h.Has() {
+		return "", nil
+	}
+	if h.hook.SubscriberCount() > 1 {
+		return "", fmt.Errorf("More than one subscriber.")
+	}
+	h.hook.Fire(args...)
+	subs := h.hook.Subscribers()
+	return New(h.ctx).ToString([]string{subs[0].Name() + "/" + h.hookName})
+}
+
+func selectHook(ctx iface.Context, hookName string) *hook {
+	return &hook{
+		ctx,
+		ctx.Conducting().Hooks().Select(hookName),
+		hookName,
+	}
 }
 
 // We must recreate this map each time because map write is not threadsafe.
@@ -335,7 +360,9 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			return pager(ctx, pagestr, count, limited)
 		},
 		"in_slice": inSlice,
-		//"hook": hook,
+		"hook": func(hookName string) *hook {
+			return selectHook(ctx, hookName)
+		},
 	}
 	ctx.Conducting().Hooks().Select("AddTemplateBuiltin").Fire(ret)
 	return ret

@@ -93,6 +93,10 @@ func (c *C) verbs(resource string) ([]verb, error) {
 	return ret, fmt.Errorf("Not implemented yet.")
 }
 
+func (c *C) composed(resource string) []string {
+	return nil
+}
+
 func jsondec(s string) interface{} {
 	return fmt.Errorf("Not implemented yet.")
 }
@@ -187,6 +191,9 @@ func (c *C) builtins() map[string]interface{} {
 		"saveOpt": saveOpt,
 		"revert": revert,
 		"findComm": findCommand,
+		"composed": func(r string) []string {
+			return c.composed(r)
+		},
 	}
 	f["help"] = func(fname string) string {
 		return help(f, fname)

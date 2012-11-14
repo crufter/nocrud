@@ -29,8 +29,6 @@ func (v *ViewContext) Publish(key string, data interface{}) iface.ViewContext {
 		if ism && ism1 {
 			v.context[key] = merge(m, m1)
 			return v
-		} else {
-			panic("You can't overwrite data.")
 		}
 	}
 	v.context[key] = data

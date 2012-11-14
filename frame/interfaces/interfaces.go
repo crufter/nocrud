@@ -30,10 +30,16 @@ type Hooks interface {
 	Module(string) Module
 }
 
+type Subscriber interface {
+	Name() string
+	Method() string
+}
+
 // The Fire method is simply runs all modules subscribed to the given hook.
 // With Iterate, one can provide a stop function as a first parameter, which will recieve the output of all hooks.
 // If the stop function returns true, the execution of subscribers stop.
 type Hook interface {
+	Subscribers() []Subscriber
 	HasSubscribers() bool
 	SubscriberCount() int
 	Fire(params ...interface{})

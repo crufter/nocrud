@@ -49,15 +49,23 @@ type subscriber struct {
 	methodName		string
 }
 
+func (s *subscriber) Name() string {
+	return s.modName
+}
+
+func (s *subscriber) Method() string {
+	return s.methodName
+}
+
 // Return all hooks modules subscribed to a path.
-func (e *Hook) subscribers() []subscriber {
-	ret := []subscriber{}
+func (e *Hook) subscribers() []*subscriber {
+	ret := []*subscriber{}
 	subscribed, ok := jsonp.GetS(e.hooks, e.Hookname)
 	if !ok {
 		return ret
 	}
 	for _, v := range subscribed {
-		inf := subscriber{}
+		inf := &subscriber{}
 		switch t := v.(type) {
 		case string:
 			inf.modName = t
@@ -69,6 +77,15 @@ func (e *Hook) subscribers() []subscriber {
 			inf.methodName = t[1].(string)
 		}
 		ret = append(ret, inf)
+	}
+	return ret
+}
+
+func (e *Hook) Subscribers() []iface.Subscriber {
+	s := e.subscribers()
+	ret := []iface.Subscriber{}
+	for _, v := range s {
+		ret = append(ret, v)
 	}
 	return ret
 }
