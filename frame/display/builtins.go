@@ -366,12 +366,12 @@ func builtins(ctx iface.Context) map[string]interface{} {
 		},
 		"concat": concat,
 		"elem": elem,
-		"pager": func(pagesl []string, count, limited int) []paging.Pelem {
+		"pager": func(page interface{}, count, limited int) []paging.Pelem {
 			var pagestr string
-			if len(pagesl) == 0 {
+			if page == nil {
 				pagestr = "1"
 			} else {
-				pagestr = pagesl[0]
+				pagestr = page.(string)
 			}
 			return pager(ctx, pagestr, count, limited)
 		},

@@ -6,6 +6,7 @@ import(
 	"path/filepath"
 	"github.com/opesun/nocrud/frame/misc/scut"
 	"fmt"
+	"strings"
 )
 
 type FileSys struct {
@@ -24,15 +25,19 @@ func New(root string, host string, opt map[string]interface{}, t iface.Temporari
 	}
 }
 
+func dirNameize(s string) string {
+	return strings.Replace(s, ":", "-", -1)
+}
+
 func (f *FileSys) SelectPlace(s string) (iface.Directory, error) {
 	var path string
 	switch s {
 	case "template":
-		path = scut.GetTPath(f.opt, f.host)
+		path = scut.GetTPath(f.opt, dirNameize(f.host))
 	case "modules":
 		path = "modules"
 	case "uploads":
-		path = "uploads"
+		path = filepath.Join("uploads", dirNameize(f.host))
 	default:
 		return nil, fmt.Errorf("Can't find.")
 	}
