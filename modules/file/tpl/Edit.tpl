@@ -6,13 +6,11 @@
 	{{$f.HiddenString}}
 	{{range .main}}
 		{{.key}}<br />
-		{{$key := .key}}
-		{{if eq .type "file"}}
-			<input type="file" name="{{.key}}" multiple="multiple"/><br />	<!-- !!! -->
-			<br />
-			{{range .value}}
-				{{.}} <a href="/{{url "delete-file" "key" $key "file" .}}">Delete</a><br />
-			{{end}}
+		{{$hname := concat .type "TypeHandler"}}
+		{{$h := hook $hname}}
+		{{if $h.Has}}
+			{{$ret := $h.Fire "KeyPrefix" $f.KeyPrefix "key" .key "value" .value}}
+			{{html $ret}}
 		{{else}}
 			<input name="{{$f.KeyPrefix}}{{.key}}" value="{{.value}}"/><br />
 		{{end}}

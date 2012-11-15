@@ -6,8 +6,11 @@
 	{{$f.HiddenString}}
 	{{range .main}}
 		{{.key}}<br />
-		{{if eq .type "file"}}
-			<input type="file" name="{{.key}}" multiple="multiple"/><br />	<!-- !!! -->
+		{{$hname := concat .type "TypeHandler"}}
+		{{$h := hook $hname}}
+		{{if $h.Has}}
+			{{$ret := $h.Fire "KeyPrefix" $f.KeyPrefix "key" .key "value" .value}}
+			{{html $ret}}
 		{{else}}
 			<input name="{{$f.KeyPrefix}}{{.key}}"/><br />
 		{{end}}

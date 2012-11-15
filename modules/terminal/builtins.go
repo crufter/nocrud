@@ -16,7 +16,7 @@ func latestOptdoc(db iface.Db) (iface.Document, error) {
 	return fil.SelectOne()
 }
 
-func (c *C) install(resource, module string) error {
+func (c *C) install(resource, module string, ignore bool) error {
 	modu := c.ctx.Conducting().Hooks().Module(module)
 	if !modu.Exists() {
 		return fmt.Errorf("Can't install nonexisting module \"%v\".", module)
@@ -25,14 +25,16 @@ func (c *C) install(resource, module string) error {
 	if err != nil {
 		return err
 	}
-	upd := map[string]interface{}{
-		"$addToSet": map[string]interface{}{
-			fmt.Sprintf("nouns.%v.composed_of", resource): module,
-		},
-	}
-	err = odoc.Update(upd)
-	if err != nil {
-		return err
+	if !ignore {
+		upd := map[string]interface{}{
+			"$addToSet": map[string]interface{}{
+				fmt.Sprintf("nouns.%v.composed_of", resource): module,
+			},
+		}
+		err = odoc.Update(upd)
+		if err != nil {
+			return err
+		}
 	}
 	ret := func(r error) {
 		err = r
@@ -42,6 +44,11 @@ func (c *C) install(resource, module string) error {
 		inst.Method("Install").Call(ret, odoc, resource)
 	}
 	return err
+}
+
+// Used when one wants to install a module without associating it to any resource.
+func (c *C) installRaw(module string) error {
+	return c.install("", module, true)
 }
 
 func (c *C) uninstall(resource, module string) error {
@@ -112,19 +119,19 @@ func setTemplate(typ, name string) error {
 	return fmt.Errorf("Not implemented yet.")
 }
 
-var arg_labels = []string{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"}
+var argLabels = []string{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"}
 
 // Returns the help for a given command.
-func help(funcmap map[string]interface{}, func_name string) string {
-	fun, has := funcmap[func_name]
+func help(funcMap map[string]interface{}, funcName string) string {
+	fun, has := funcMap[funcName]
 	if !has {
-		return fmt.Sprintf("No function named %v.", func_name)
+		return fmt.Sprintf("No function named %v.", funcName)
 	}
 	v := reflect.TypeOf(fun)
 	ret := ""
-	ret = ret + fmt.Sprintf("\nfunc %v(", func_name)
+	ret = ret + fmt.Sprintf("\nfunc %v(", funcName)
 	for i:=0;i<v.NumIn();i++{
-		ret = ret+arg_labels[i]+" "+fmt.Sprint(v.In(i))
+		ret = ret+argLabels[i]+" "+fmt.Sprint(v.In(i))
 		if i<v.NumIn()-1 {
 			ret = ret + ", "
 		}
@@ -146,8 +153,8 @@ func help(funcmap map[string]interface{}, func_name string) string {
 }
 
 // Returns true if the command available.
-func avail(funcmap map[string]interface{}, func_name string) bool {
-	_, has := funcmap[func_name]
+func avail(funcMap map[string]interface{}, funcName string) bool {
+	_, has := funcMap[funcName]
 	return has
 }
 
@@ -179,7 +186,7 @@ func findCommand(s string) []string {
 func (c *C) builtins() map[string]interface{} {
 	f := map[string]interface{}{
 		"install": func(resource, module string) error {
-			return c.install(resource, module)
+			return c.install(resource, module, false)
 		},
 		"uninstall": func(resource, module string) error {
 			return c.uninstall(resource, module)
@@ -193,6 +200,9 @@ func (c *C) builtins() map[string]interface{} {
 		"findComm": findCommand,
 		"composed": func(r string) []string {
 			return c.composed(r)
+		},
+		"installRaw": func(module string) error {
+			return c.installRaw(module)
 		},
 	}
 	f["help"] = func(fname string) string {

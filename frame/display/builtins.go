@@ -293,9 +293,20 @@ func (h *hook) Fire(args ...interface{}) (string, error) {
 	if h.hook.SubscriberCount() > 1 {
 		return "", fmt.Errorf("More than one subscriber.")
 	}
-	h.hook.Fire(args...)
+	ma := convert.ListToMap(args...)
+	inp := []interface{}{}
+	for i, v := range ma {
+		h.ctx.ViewContext().Publish(i, v)
+		inp = append(inp, v)
+	}
 	subs := h.hook.Subscribers()
-	return New(h.ctx).ToString([]string{subs[0].Name() + "/" + h.hookName})
+	modName := subs[0].Name()
+	if h.ctx.Conducting().Hooks().Module(modName).Instance().HasMethod(h.hookName) {
+		h.hook.Fire(inp...)
+	}
+	return New(h.ctx).ToString([]string{
+		modName + "/" + h.hookName,
+	})
 }
 
 func selectHook(ctx iface.Context, hookName string) *hook {
@@ -304,6 +315,10 @@ func selectHook(ctx iface.Context, hookName string) *hook {
 		ctx.Conducting().Hooks().Select(hookName),
 		hookName,
 	}
+}
+
+func concat(s ...string) string {
+	return strings.Join(s, "")
 }
 
 // We must recreate this map each time because map write is not threadsafe.
@@ -349,6 +364,7 @@ func builtins(ctx iface.Context) map[string]interface{} {
 		"get_list": func(str string, params ...interface{}) []interface{} {
 			return getList(ctx, str, params...)
 		},
+		"concat": concat,
 		"elem": elem,
 		"pager": func(pagesl []string, count, limited int) []paging.Pelem {
 			var pagestr string

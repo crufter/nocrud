@@ -173,7 +173,7 @@ func (e *Hook) instance(modname string) iface.Instance {
 	return insta
 }
 
-func (e *Hook) iterate(Hookname string, stopfunc interface{}, params ...interface{}) {
+func (e *Hook) iterate(hookName string, stopfunc interface{}, params ...interface{}) {
 	subscribed := e.subscribers()
 	if len(subscribed) == 0 {
 		return
@@ -187,7 +187,7 @@ func (e *Hook) iterate(Hookname string, stopfunc interface{}, params ...interfac
 		}
 		stopfunc_numin = s.NumIn()
 	}
-	nameized := hooknameize(Hookname)
+	nameized := hooknameize(hookName)
 	for _, hinf := range subscribed {
 		if hinf.methodName == "" {
 			hinf.methodName = nameized

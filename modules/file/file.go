@@ -28,7 +28,7 @@ func (c *C) SanitizerMangler(san *sanitize.Extractor) {
 	san.AddFuncs(sanitize.FuncMap{
 		"file": func(dat interface{}, s sanitize.Scheme) (interface{}, error) {
 			temps := c.fileSys.Temporaries()
-			if temps.Exists(s.Key) {
+			if !temps.Exists(s.Key) {
 				return nil, fmt.Errorf("Can't find key amongst files.")
 			}
 			temp := temps.Select(s.Key)
@@ -53,6 +53,10 @@ func (c *C) moveFiles(subject, id string) error {
 				return err
 			}
 			target_file := target_dir.Directory(folder).File(file.Name())
+			err = target_file.Create()
+			if err != nil {
+				return err
+			}
 			err = target_file.Write(data)
 			if err != nil {
 				return err
@@ -192,4 +196,30 @@ func (c *C) Edit(a iface.Filter) ([]map[string]interface{}, error) {
 		return nil, err
 	}
 	return convert.SchemeToFields(scheme, doc)
+}
+
+func (c *C) Install(o iface.Document, resource string) error {
+	upd := map[string]interface{}{
+		"$addToSet": map[string]interface{}{
+			"Hooks.SanitizerMangler": "file",
+			"Hooks.fileTypeHandler": []interface{}{
+				"file",
+				"FileTypeHandler",
+			},
+		},
+	}
+	return o.Update(upd)
+}
+
+func (c *C) Uninstall(o iface.Document, resource string) error {
+	upd := map[string]interface{}{
+		"$pull": map[string]interface{}{
+			"Hooks.SanitizerMangler": "file",
+			"Hooks.fileTypeHandler": []interface{}{
+				"file",
+				"FileTypeHandler",
+			},
+		},
+	}
+	return o.Update(upd)
 }

@@ -41,4 +41,15 @@ The language of the user currently comes from two sources:
 - It can either be defined explicitly in the database, under the field "languages",
 - Or it is inherited from the Accept-Language header of the browser.
 
+### Template hooks
+
+You can call a hook by:
+```
+{{$h := hook "HookName"}}
+{{$h.Fire}}
+```
+
+See an example in the module **fkid**.  
+Local template variables (beginning with $ and not .) of the hook caller are not available in the templates displayed by the hook.  
+
 #### For more information about the display layer, see /frame/display

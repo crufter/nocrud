@@ -47,12 +47,10 @@ func createItem(key string, scheme interface{}, dat interface{}) map[string]inte
 	item := map[string]interface{}{"key": key}
 	item["value"] = dat
 	if sch, ok := scheme.(map[string]interface{}); ok {
-		if typ, hast := sch["type"]; hast {
-			item["type"] = typ
-		}
-		if disp, hasd := sch["disp"]; hasd {
-			item["disp"] = disp
-		}
+		item["type"] = sch["type"]
+		item["disp"] = sch["disp"]
+	} else {
+		item["type"] = "string"
 	}
 	return item
 }

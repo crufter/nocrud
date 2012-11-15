@@ -17,6 +17,10 @@ func New(path string) *File {
 }
 
 func (f *File) Create() error {
+	err := os.MkdirAll(filepath.Dir(f.path), os.ModePerm)
+	if err != nil {
+		return err
+	}
 	return ioutil.WriteFile(f.path, []byte{}, os.ModePerm)
 }
 
