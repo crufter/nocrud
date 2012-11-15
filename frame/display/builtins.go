@@ -331,25 +331,25 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			return get(viewCtx, s...)
 		},
 		"date": date,
-		"is_stranger": func() bool {
+		"isStranger": func() bool {
 			return user.Level() == 0
 		},
-		"logged_in": func() bool {
+		"loggedIn": func() bool {
 			return user.Level() > 0
 		},
-		"is_moderator": func() bool {
+		"isModerator": func() bool {
 			return user.Level() >= 200
 		},
-		"is_admin": func() bool {
+		"isAdmin": func() bool {
 			return user.Level() >= 300
 		},
-		"is_map": isMap,
+		"isMap": isMap,
 		"eq": eq,
 		"html": html,
-		"format_float": formatFloat,
+		"formatFloat": formatFloat,
 		"fallback": fallback,
-		"type_of":	typeOf,
-		"same_kind": sameKind,
+		"typeOf":	typeOf,
+		"sameKind": sameKind,
 		"title": strings.Title,
 		"url": func(action_name string, i ...interface{}) string {
 			return _url(ctx, action_name, i...) 
@@ -358,10 +358,10 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			return form(ctx, action_name)
 		},
 		"counter": newcounter,
-		"get_sub": func(str string, params ...interface{}) []interface{} {
+		"getSub": func(str string, params ...interface{}) []interface{} {
 			return getSub(ctx, str, params...)
 		},
-		"get_list": func(str string, params ...interface{}) []interface{} {
+		"getList": func(str string, params ...interface{}) []interface{} {
 			return getList(ctx, str, params...)
 		},
 		"concat": concat,
@@ -375,7 +375,7 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			}
 			return pager(ctx, pagestr, count, limited)
 		},
-		"in_slice": inSlice,
+		"inSlice": inSlice,
 		"hook": func(hookName string) *hook {
 			return selectHook(ctx, hookName)
 		},
