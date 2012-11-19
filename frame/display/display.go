@@ -189,8 +189,9 @@ func (d *Display) putJSON() error {
 
 // This is called if an error occured in a front hook.
 func (d *Display) Error(err error) error {
-	d.ctx.ViewContext().Publish("error", err)
-	return d.Do([]string{"error"})
+	d.ctx.ViewContext().Publish("error", err.Error())
+	d.Do([]string{"error"})
+	return err	// Intentionally not returning the error coming from the above line.
 }
 
 // Does format conversions.

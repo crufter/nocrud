@@ -50,6 +50,26 @@ func (c *C) Execute(data map[string]interface{}) (string, error) {
 	return strings.Join(output_lines, "\n"), nil
 }
 
+func (c *C) Install(o iface.Document, resource string) error {
+	upd := map[string]interface{}{
+		"$set": map[string]interface{}{
+			"nouns." + resource + ".verbs.Execute.input": map[string]interface{}{
+				"script": 1,
+			},
+		},
+	}
+	return o.Update(upd)
+}
+
+func (C *C) Uninstall(o iface.Document, resource string) error {
+	upd := map[string]interface{}{
+		"$set": map[string]interface{}{
+			"nouns." + resource + ".verbs.Execute.input": 1,
+		},
+	}
+	return o.Update(upd)
+}
+
 func stripComments(lines []string) []string {
 	ret := []string{}
 	for _, v := range lines {
