@@ -259,5 +259,19 @@ An application (in most cases, a website) is able to start with an nonexistent o
 The default public template will be loaded, and a default optdoc will be loaded,
 where the only resource defined will be the "options" itself, so you can edit it.
 
-Optdoc examples are coming soon.
+The terminal
+---
+
+If you are not a module developer though, you don't have to deal with the above mentioned optdoc, noCrud comes with a preinstalled terminal, where you can run
+scripts, helping administration and site setup.  
+
+For example:
+
+```
+install "users" "skeleton"
+setScheme "users" `{"name":1,"age":{"type":"number"}}`
+install "cars" "skeleton"
+setScheme "cars" "skeleton" `{"make":1}`
+```
+
 
