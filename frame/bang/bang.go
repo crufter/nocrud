@@ -9,13 +9,11 @@ import(
 	"github.com/opesun/nocrud/frame/mod"
 	"github.com/opesun/nocrud/frame/misc/convert"
 	"github.com/opesun/nocrud/frame/misc/scut"
-	"github.com/opesun/nocrud/frame/impl/filter"
 	"github.com/opesun/nocrud/frame/impl/hooks"
 	"github.com/opesun/nocrud/frame/impl/user"
 	"github.com/opesun/nocrud/frame/impl/db/mongodb"
 	"github.com/opesun/nocrud/frame/impl/client"
 	"github.com/opesun/nocrud/frame/impl/events"
-	"github.com/opesun/nocrud/frame/impl/set/mongodb"
 	"github.com/opesun/nocrud/frame/impl/temporaries"
 	"github.com/opesun/nocrud/frame/impl/filesys"
 	"github.com/opesun/nocrud/frame/impl/nonportable"
@@ -50,11 +48,7 @@ func New(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w http
 	}
 	hoo := hooks.New(hookz, mod.NewModule)
 	datab := db.New(session, dbConn, opts, hoo)
-	usrFilter, err := filter.NewSimple(set.New(dbConn, "users"), nil)
-	if err != nil {
-		return nil, err
-	}
-	usr := user.New(datab, usrFilter, hoo, cli)
+	usr := user.New(datab, hoo, cli)
 	err = req.ParseMultipartForm(1000000)
 	if err != nil {
 		return nil, err
@@ -96,11 +90,7 @@ func NewWS(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w ht
 	}
 	hoo := hooks.New(hookz, mod.NewModule)
 	datab := db.New(session, dbConn, opts, hoo)
-	usrFilter, err := filter.NewSimple(set.New(dbConn, "users"), nil)
-	if err != nil {
-		return nil, err
-	}
-	usr := user.New(datab, usrFilter, hoo, cli)
+	usr := user.New(datab, hoo, cli)
 	err = req.ParseMultipartForm(1000000)
 	if err != nil {
 		return nil, err

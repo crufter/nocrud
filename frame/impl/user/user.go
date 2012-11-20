@@ -3,6 +3,7 @@ package user
 import(
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/numcon"
+	"strings"
 )
 
 type User struct {
@@ -11,20 +12,31 @@ type User struct {
 	languages	[]string
 }
 
-func New(db iface.Db, f iface.Filter, hooks iface.Hooks, client iface.Client) *User {
-	user, err := _new(db, f, hooks, client)
+func New(db iface.Db, hooks iface.Hooks, client iface.Client) *User {
+	user, err := _new(db, hooks, client)
 	if err != nil {
 		return emptyUser(client)
 	}
 	return user
 }
 
-func _new(db iface.Db, f iface.Filter, hooks iface.Hooks, client iface.Client) (*User, error) {
+func _new(db iface.Db, hooks iface.Hooks, client iface.Client) (*User, error) {
 	uidI, err := client.GetDecrypted("user")
 	if err != nil {
 		return nil, err
 	}
-	id, err := db.ToId(uidI.(string))
+	uidStr := uidI.(string)
+	coll := "users"
+	spl := strings.Split(uidStr, "|")
+	if len(spl) > 1 {
+		coll = spl[0]
+		uidStr = spl[1]
+	}
+	f, err := db.NewFilter(coll, nil)
+	if err != nil {
+		return nil, err
+	}
+	id, err := db.ToId(uidStr)
 	if err != nil {
 		return nil, err
 	}

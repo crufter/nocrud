@@ -4,6 +4,7 @@ import(
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"reflect"
 	"fmt"
+	"encoding/json"
 )
 
 func latestOptdoc(db iface.Db) (iface.Document, error) {
@@ -183,6 +184,27 @@ func findCommand(s string) []string {
 	return nil
 }
 
+// 
+func (c *C) setScheme(resource, jsn string) error {
+	doc, err := latestOptdoc(c.ctx.Db())
+	if err != nil {
+		return err
+	}
+	var v interface{}
+	err = json.Unmarshal([]byte(jsn), &v)
+	if err != nil {
+		return fmt.Errorf("Json not valid:" + err.Error())
+	}
+	scheme := v.(map[string]interface{})
+	upd := map[string]interface{}{
+		"$set": map[string]interface{}{
+			"nouns." + resource + ".verbs.Insert.input": scheme,
+			"nouns." + resource + ".verbs.Update.input": scheme,
+		},
+	}
+	return doc.Update(upd)
+}
+
 func (c *C) builtins() map[string]interface{} {
 	f := map[string]interface{}{
 		"install": func(resource, module string) error {
@@ -194,6 +216,9 @@ func (c *C) builtins() map[string]interface{} {
 		"chost": chost,
 		"setTempl": setTemplate,
 		"jsondec": jsondec,
+		"setScheme": func(resource, jsn string) error {
+			return c.setScheme(resource, jsn)
+		},
 		"tagOpt": tagOpt,
 		"saveOpt": saveOpt,
 		"revert": revert,

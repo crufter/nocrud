@@ -65,7 +65,7 @@ func (a *C) Login(f iface.Filter, data map[string]interface{}) error {
 	pass := data["password"].(string)
 	// Maybe there could be a check here to not log in somebody who is already logged in.
 	if user, err := user_model.FindLogin(f, name, pass); err == nil {
-		a.client.StoreEncrypted("user", user.Id().String())
+		a.client.StoreEncrypted("user", f.Subject() + "|" + user.Id().String())
 	} else {
 		return err
 	}
