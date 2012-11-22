@@ -1,26 +1,26 @@
 package display
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/opesun/jsonp"
+	"github.com/opesun/nocrud/frame/display/model"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/misc/scut"
-	"github.com/opesun/nocrud/frame/display/model"
-	"github.com/opesun/jsonp"
 	"github.com/opesun/require"
 	"github.com/russross/blackfriday"
 	"html/template"
-	"strings"
 	"io"
-	"bytes"
+	"strings"
 )
 
 type Display struct {
-	ctx		iface.Context
+	ctx iface.Context
 }
 
 func New(ctx iface.Context) *Display {
-	return &Display {
+	return &Display{
 		ctx: ctx,
 	}
 }
@@ -65,7 +65,7 @@ func (d *Display) localizeContext() error {
 }
 
 func runDisplayHook(hooks iface.Hooks) {
-	defer func(){
+	defer func() {
 		r := recover()
 		if r != nil {
 			fmt.Println(r)
@@ -148,10 +148,10 @@ func (d *Display) publishLangs() {
 
 // Tries to dislay a template file.
 func (d *Display) getFile(filepath string) (string, error) {
-	return require.R("", filepath + ".tpl",
-	func(root, fi string) ([]byte, error) {
-		return getFileAndConvert(d.ctx.FileSys(), fi)
-	})
+	return require.R("", filepath+".tpl",
+		func(root, fi string) ([]byte, error) {
+			return getFileAndConvert(d.ctx.FileSys(), fi)
+		})
 }
 
 // Loads localization, template functions and executes the template.
@@ -191,7 +191,7 @@ func (d *Display) putJSON() error {
 func (d *Display) Error(err error) error {
 	d.ctx.ViewContext().Publish("error", err.Error())
 	d.Do([]string{"error"})
-	return err	// Intentionally not returning the error coming from the above line.
+	return err // Intentionally not returning the error coming from the above line.
 }
 
 // Does format conversions.

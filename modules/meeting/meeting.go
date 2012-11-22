@@ -1,17 +1,17 @@
 package meeting
 
-import(
+import (
+	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/modules/meeting/evenday"
-	"fmt"
 )
 
-type C struct {
-	user	iface.User
+type Entries struct {
+	user iface.User
 }
 
-func (c *C) Init(ctx iface.Context) {
-	c.user = ctx.User()
+func (e *Entries) Init(ctx iface.Context) {
+	e.user = ctx.User()
 }
 
 func toSS(sl []interface{}) []string {
@@ -42,11 +42,15 @@ func (c *C) DeleteEntry(a iface.Filter) error {
 	return nil
 }
 
-func (c *C) TimeTable() ([]string, error) {
-	return nil, nil
+type TimeTable struct {
+	user iface.User
 }
 
-func (c *C) SaveTimetable(a iface.Filter, data map[string]interface{}) error {
+func (tt *TimeTable) Init(ctx iface.Context) {
+	tt.user = ctx.User()
+}
+
+func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
 	if _, ok := c.user.Data()["professional"]; !ok {
 		return fmt.Errorf("Only professionals can save timetables.")
 	}

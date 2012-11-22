@@ -1,15 +1,15 @@
 package directory
 
-import(
-	"os"
-	"io/ioutil"
-	iface "github.com/opesun/nocrud/frame/interfaces"
+import (
 	"github.com/opesun/nocrud/frame/impl/file"
+	iface "github.com/opesun/nocrud/frame/interfaces"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
 type Directory struct {
-	path	string
+	path string
 }
 
 func New(path string) *Directory {
@@ -34,9 +34,9 @@ func (d *Directory) Remove() error {
 }
 
 type FileInfo struct {
-	name	string
-	path	string
-	isDir	bool
+	name  string
+	path  string
+	isDir bool
 }
 
 func (f *FileInfo) File() iface.File {
@@ -71,9 +71,9 @@ func (d *Directory) List() ([]iface.FileInfo, error) {
 	ret := []iface.FileInfo{}
 	for _, v := range finfos {
 		ret = append(ret, &FileInfo{
-			name:	v.Name(),
-			path:	filepath.Join(d.path, v.Name()),
-			isDir:	v.IsDir(),
+			name:  v.Name(),
+			path:  filepath.Join(d.path, v.Name()),
+			isDir: v.IsDir(),
 		})
 	}
 	return ret, nil

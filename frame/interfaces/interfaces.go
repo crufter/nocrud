@@ -59,8 +59,8 @@ type Event interface {
 }
 
 type Method interface {
-	Call(interface{}, ...interface{}) error			// First param is the return reciever function, others are input arguments for the Method.
-	Matches(interface{}) bool						// Returns true if the Method matches the signature of the supplied function.
+	Call(interface{}, ...interface{}) error // First param is the return reciever function, others are input arguments for the Method.
+	Matches(interface{}) bool               // Returns true if the Method matches the signature of the supplied function.
 	InputTypes() []reflect.Type
 	OutputTypes() []reflect.Type
 }
@@ -68,8 +68,8 @@ type Method interface {
 // An instance is an empty instance of a given type.
 // To convert an instance of any type to an Instance, see /frame/mod.ToInstance(interface{})
 type Instance interface {
-	HasMethod(string) bool			// Returns true if the Instance has a method with the name supplied.
-	MethodNames() []string			// Returns all public method names of Instance.
+	HasMethod(string) bool // Returns true if the Instance has a method with the name supplied.
+	MethodNames() []string // Returns all public method names of Instance.
 	Method(string) Method
 }
 
@@ -129,8 +129,8 @@ type Filter interface {
 	Subject() string
 	AddParents(string, []Id)
 	Modifiers() Modifiers
-	Count()	(int, error)
-	Iterate(func(Document)error) error
+	Count() (int, error)
+	Iterate(func(Document) error) error
 	// --
 	FindOne() (map[string]interface{}, error)
 	Find() ([]map[string]interface{}, error)
@@ -166,9 +166,9 @@ type DocumentPointer interface {
 
 // Modifiers are used to modify the querying of a collection, see interfaces Fiter and Set.
 type Modifiers interface {
-	Sort()		[]string
-	Limit()		int
-	Skip()		int
+	Sort() []string
+	Limit() int
+	Skip() int
 }
 
 // Channels are used as a last resort of passing data trough the system.
@@ -208,15 +208,15 @@ type Db interface {
 
 // User represents the user interacting with the application.
 type User interface {
-					Document
-	Level() 		int
-	Languages() 	[]string
+	Document
+	Level() int
+	Languages() []string
 }
 
 // The client allows you to store and retrieve data at the client.
 type Client interface {
-	StoreEncrypted(string,interface{}) error
-	Store(string,interface{}) error
+	StoreEncrypted(string, interface{}) error
+	Store(string, interface{}) error
 	Get(string) (interface{}, error)
 	GetDecrypted(string) (interface{}, error)
 	Unstore(string) error
@@ -225,14 +225,14 @@ type Client interface {
 
 // ViewContext contains the data the views has access to.
 type ViewContext interface {
-	Publish(string,interface{}) ViewContext
+	Publish(string, interface{}) ViewContext
 	Get() map[string]interface{}
 }
 
 // FileInfo is a generalized interface to obtain information about a file.
 type FileInfo interface {
-	Name()	string
-	IsDir()	bool
+	Name() string
+	IsDir() bool
 	File() File
 	Directory() Directory
 }
@@ -257,7 +257,7 @@ type File interface {
 	Read() ([]byte, error)
 	Remove() error
 	Rename(string) error
-	Name()	string
+	Name() string
 }
 
 // Readable file provides a subset of the functionality provided by the interace File: it can be read only.
@@ -270,7 +270,7 @@ type ReadableFile interface {
 // A way of accessing uploaded files without getting too involved in implementation details.
 type Temporaries interface {
 	Select(string) []ReadableFile
-	Exists(string)	bool
+	Exists(string) bool
 	Keys() []string
 }
 
@@ -287,7 +287,7 @@ type FileSys interface {
 type NonPortable interface {
 	Resource() string
 	Params() map[string]interface{}
-	Redirect(string)		// Not sure about this.
+	Redirect(string) // Not sure about this.
 	ComingFrom() string
 	View() bool
 	RawParams() string

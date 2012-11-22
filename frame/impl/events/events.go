@@ -1,26 +1,26 @@
 package events
 
-import(
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	gt "github.com/opesun/gotrigga"
+import (
 	"fmt"
+	gt "github.com/opesun/gotrigga"
+	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 var conn_never = fmt.Errorf("Connection to server was never established.")
 
 type Events struct {
-	conn	*gt.Connection
+	conn *gt.Connection
 }
 
-func New (conn *gt.Connection) *Events {
+func New(conn *gt.Connection) *Events {
 	return &Events{
 		conn,
 	}
 }
 
 type Event struct {
-	room	*gt.Room
-	name	string
+	room *gt.Room
+	name string
 }
 
 func (e *Events) Select(name string) iface.Event {

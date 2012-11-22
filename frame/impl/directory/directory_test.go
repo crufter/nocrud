@@ -1,10 +1,10 @@
 package directory_test
 
-import(
+import (
 	"github.com/opesun/nocrud/frame/impl/directory"
-	"testing"
 	"os"
 	"path/filepath"
+	"testing"
 )
 
 func exists(path string) (bool, error) {

@@ -1,18 +1,18 @@
 package filter_test
 
-import(
-	iface "github.com/opesun/nocrud/frame/interfaces"
+import (
 	"github.com/opesun/nocrud/frame/impl/filter"
+	iface "github.com/opesun/nocrud/frame/interfaces"
 	"testing"
 )
 
-type MockEvents struct {}
+type MockEvents struct{}
 
 func (m MockEvents) Select(string) iface.Event {
 	return MockEvent{}
 }
 
-type MockEvent struct {}
+type MockEvent struct{}
 
 func (m MockEvent) Fire(params ...interface{}) {
 }
@@ -21,12 +21,12 @@ func (m MockEvent) Iterate(ret_rec interface{}, params ...interface{}) {
 }
 
 type TestSet struct {
-	skip 		int
-	limit 		int
-	sort 		[]string
-	lastQuery	map[string]interface{}
-	name		string
-	lastData	map[string]interface{}
+	skip      int
+	limit     int
+	sort      []string
+	lastQuery map[string]interface{}
+	name      string
+	lastData  map[string]interface{}
 }
 
 func (t *TestSet) Skip(i int) {
@@ -89,9 +89,9 @@ func TestMods(t *testing.T) {
 	set := &TestSet{}
 	ev := &MockEvents{}
 	inp := map[string]interface{}{
-		"limit": 	10,
-		"skip":		3,
-		"sort":		[]string{"x", "y"},
+		"limit": 10,
+		"skip":  3,
+		"sort":  []string{"x", "y"},
 	}
 	f, err := filter.New(set, ev, inp)
 	if err != nil {
@@ -114,9 +114,9 @@ func TestModsSingle(t *testing.T) {
 	set := &TestSet{}
 	ev := &MockEvents{}
 	inp := map[string]interface{}{
-		"limit": 	10,
-		"skip":		3,
-		"sort":		[]string{"x", "y"},
+		"limit": 10,
+		"skip":  3,
+		"sort":  []string{"x", "y"},
 	}
 	f, err := filter.New(set, ev, inp)
 	if err != nil {
@@ -138,10 +138,10 @@ func TestQueryIn(t *testing.T) {
 	set := &TestSet{}
 	ev := &MockEvents{}
 	inp := map[string]interface{}{
-		"key": 		[]interface{}{1, 2, 3},
-		"limit": 	10,
-		"skip":		3,
-		"sort":		[]string{"x", "y"},
+		"key":   []interface{}{1, 2, 3},
+		"limit": 10,
+		"skip":  3,
+		"sort":  []string{"x", "y"},
 	}
 	f, err := filter.New(set, ev, inp)
 	if err != nil {
@@ -161,7 +161,7 @@ func TestCloneQuery(t *testing.T) {
 	set := &TestSet{}
 	ev := &MockEvents{}
 	inp := map[string]interface{}{
-		"crit": 	"x",
+		"crit": "x",
 	}
 	f, err := filter.New(set, ev, inp)
 	if err != nil {
@@ -169,7 +169,7 @@ func TestCloneQuery(t *testing.T) {
 	}
 	f1 := f.Clone()
 	f1.AddQuery(map[string]interface{}{
-		"another_crit":	"y",
+		"another_crit": "y",
 	})
 	f.Find()
 	if len(set.lastQuery) != 1 {
@@ -187,7 +187,7 @@ func TestParents(t *testing.T) {
 	set := &TestSet{}
 	ev := &MockEvents{}
 	inp := map[string]interface{}{
-		"crit": 	"x",
+		"crit": "x",
 	}
 	f, err := filter.New(set, ev, inp)
 	if err != nil {
@@ -204,7 +204,7 @@ func TestParents(t *testing.T) {
 		t.Fatal(set.lastData)
 	}
 	f.Insert(map[string]interface{}{
-		"x":"y",
+		"x": "y",
 	})
 	if len(set.lastData) != 2 || len(set.lastData[fieldname].([]iface.Id)) != 3 {
 		t.Fatal(set.lastData)
@@ -215,14 +215,14 @@ func TestAddQuerySafety(t *testing.T) {
 	set := &TestSet{}
 	ev := &MockEvents{}
 	inp := map[string]interface{}{
-		"crit": 	"x",
+		"crit": "x",
 	}
 	f, err := filter.New(set, ev, inp)
 	if err != nil {
 		t.Fatal(err)
 	}
 	add := map[string]interface{}{
-		"crit":		"y",
+		"crit": "y",
 	}
 	f.AddQuery(add)
 	f.Find()

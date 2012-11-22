@@ -1,9 +1,9 @@
 package convert
 
-import(
+import (
+	"fmt"
 	"labix.org/v2/mgo/bson"
 	"sort"
-	"fmt"
 )
 
 // Cleans all bson.M s to map[string]interface{} s. Usually called on db query results.
@@ -119,7 +119,7 @@ func OrderKeys(d map[string]interface{}) []interface{} {
 
 // Converts all bson.ObjectId s to string. Usually called before displaying a database query result.
 // Input is the result from the database.
-func Recurs(v interface{}, converter func(interface{})(interface{},bool)) interface{} {
+func Recurs(v interface{}, converter func(interface{}) (interface{}, bool)) interface{} {
 	switch value := v.(type) {
 	case bson.M:
 		for i, mem := range value {
@@ -173,13 +173,13 @@ func MapAdd(ma map[string]interface{}, key string, value interface{}) {
 		slice = append(slice, value)
 	}
 	ma[key] = slice
-} 
+}
 
 func ListToMap(i ...interface{}) map[string]interface{} {
 	r := map[string]interface{}{}
-	for x:=0;x<len(i)-1; {
+	for x := 0; x < len(i)-1; {
 		MapAdd(r, i[x].(string), i[x+1])
-		x = x+2
+		x = x + 2
 	}
 	return r
 }

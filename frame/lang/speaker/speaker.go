@@ -2,8 +2,8 @@ package speaker
 
 type Speaker struct {
 	NounsToVerbs map[string]interface{}
-	Has func(string, string) bool
-	Fallback string
+	Has          func(string, string) bool
+	Fallback     string
 }
 
 func New(a func(string, string) bool, b map[string]interface{}) *Speaker {

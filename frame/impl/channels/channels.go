@@ -1,22 +1,22 @@
 package channels
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 type Channels struct {
-	m	map[string][]interface{}
+	m map[string][]interface{}
 }
 
 func New() *Channels {
-	return &Channels {
+	return &Channels{
 		map[string][]interface{}{},
 	}
 }
 
 type Channel struct {
-	m		map[string][]interface{}
-	name	string
+	m    map[string][]interface{}
+	name string
 }
 
 func (c *Channels) Select(s string) iface.Channel {

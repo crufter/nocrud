@@ -1,13 +1,13 @@
 package options
 
-import(
-	iface "github.com/opesun/nocrud/frame/interfaces"
+import (
 	"github.com/opesun/nocrud/frame/impl/nesteddata"
+	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 type Options struct {
-	opts	iface.NestedData
-	m		iface.NestedData
+	opts iface.NestedData
+	m    iface.NestedData
 }
 
 func New(opts, m map[string]interface{}) *Options {

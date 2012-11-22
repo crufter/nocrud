@@ -3,20 +3,20 @@ package display
 // All functions which can be called from templates reside here.
 
 import (
+	"fmt"
+	"github.com/opesun/jsonp"
+	"github.com/opesun/nocrud/frame/highlev"
+	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/lang"
 	"github.com/opesun/nocrud/frame/misc/convert"
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/highlev"
 	"github.com/opesun/nocrud/frame/misc/scut"
-	"github.com/opesun/jsonp"
-	"github.com/opesun/paging"
 	"github.com/opesun/numcon"
+	"github.com/opesun/paging"
 	"html/template"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
-	"fmt"
 )
 
 func get(dat map[string]interface{}, s ...string) interface{} {
@@ -128,7 +128,7 @@ func (f *Form) HiddenString() template.HTML {
 	d := f.HiddenFields()
 	ret := ""
 	for _, v := range d {
-		ret = ret+`<input type="hidden" name="`+v[0]+`" value="`+v[1]+`" />`
+		ret = ret + `<input type="hidden" name="` + v[0] + `" value="` + v[1] + `" />`
 	}
 	return template.HTML(ret)
 }
@@ -168,7 +168,7 @@ func newcounter() *counter {
 	return &v
 }
 
-func (c *counter) Inc() string {		// Ugly hack, template engine needs a return value.
+func (c *counter) Inc() string { // Ugly hack, template engine needs a return value.
 	*c++
 	return ""
 }
@@ -181,7 +181,7 @@ func (c counter) EveryX(i int) bool {
 	if i == 0 {
 		return false
 	}
-	return int(c)%i==0
+	return int(c)%i == 0
 }
 
 // Works from Get or GetSingle only.
@@ -215,7 +215,7 @@ func getList(ctx iface.Context, noun string, params ...interface{}) []interface{
 		panic("Can't find nouns.")
 	}
 	inp := convert.ListToMap(params...)
-	hl, err := highlev.New(ctx.Conducting().Hooks(), "/" + noun, nouns, inp)
+	hl, err := highlev.New(ctx.Conducting().Hooks(), "/"+noun, nouns, inp)
 	if err != nil {
 		panic(err)
 	}
@@ -229,11 +229,11 @@ func getList(ctx iface.Context, noun string, params ...interface{}) []interface{
 }
 
 type pagr struct {
-	HasPrev		bool
-	Prev		int
-	HasNext		bool
-	Next		int
-	Elems		[]paging.Pelem
+	HasPrev bool
+	Prev    int
+	HasNext bool
+	Next    int
+	Elems   []paging.Pelem
 }
 
 func pager(ctx iface.Context, pagestr string, count, limit int) []paging.Pelem {
@@ -246,12 +246,12 @@ func pager(ctx iface.Context, pagestr string, count, limit int) []paging.Pelem {
 	p := ctx.NonPortable().Resource() + "?" + ctx.NonPortable().RawParams()
 	page, err := strconv.Atoi(pagestr)
 	if err != nil {
-		return nil	// Not blowing up here.
+		return nil // Not blowing up here.
 	}
 	if page == 0 {
 		return nil
 	}
-	page_count := count/limit+1
+	page_count := count/limit + 1
 	nav, _ := paging.P(page, page_count, 3, p)
 	return nav
 }
@@ -277,9 +277,9 @@ func inSlice(s []interface{}, b interface{}) bool {
 }
 
 type hook struct {
-	ctx			iface.Context
-	hook		iface.Hook
-	hookName	string
+	ctx      iface.Context
+	hook     iface.Hook
+	hookName string
 }
 
 func (h *hook) Has() bool {
@@ -343,16 +343,16 @@ func builtins(ctx iface.Context) map[string]interface{} {
 		"isAdmin": func() bool {
 			return user.Level() >= 300
 		},
-		"isMap": isMap,
-		"eq": eq,
-		"html": html,
+		"isMap":       isMap,
+		"eq":          eq,
+		"html":        html,
 		"formatFloat": formatFloat,
-		"fallback": fallback,
-		"typeOf":	typeOf,
-		"sameKind": sameKind,
-		"title": strings.Title,
+		"fallback":    fallback,
+		"typeOf":      typeOf,
+		"sameKind":    sameKind,
+		"title":       strings.Title,
 		"url": func(action_name string, i ...interface{}) string {
-			return _url(ctx, action_name, i...) 
+			return _url(ctx, action_name, i...)
 		},
 		"form": func(action_name string) *Form {
 			return form(ctx, action_name)
@@ -365,7 +365,7 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			return getList(ctx, str, params...)
 		},
 		"concat": concat,
-		"elem": elem,
+		"elem":   elem,
 		"pager": func(page interface{}, count, limited int) []paging.Pelem {
 			var pagestr string
 			if page == nil {

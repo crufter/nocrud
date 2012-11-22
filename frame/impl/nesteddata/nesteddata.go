@@ -1,13 +1,13 @@
 package nesteddata
 
-import(
+import (
 	"github.com/opesun/jsonp"
 	"github.com/opesun/numcon"
 	"strings"
 )
 
 type NestedData struct {
-	d	interface{}
+	d interface{}
 }
 
 func New(n interface{}) *NestedData {
@@ -43,7 +43,7 @@ func (n *NestedData) GetF(s ...string) (float64, bool) {
 		return 0, false
 	}
 	return val, true
-} 
+}
 
 func (n *NestedData) GetS(s ...string) ([]interface{}, bool) {
 	r, ok := n.Get(s...)

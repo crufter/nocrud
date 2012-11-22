@@ -1,6 +1,6 @@
 package id
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"labix.org/v2/mgo/bson"
 )
@@ -15,5 +15,5 @@ func NewId() iface.Id {
 }
 
 func ToId(encodedForm string) iface.Id {
-	
+
 }

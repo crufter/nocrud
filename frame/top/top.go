@@ -1,21 +1,21 @@
 package top
 
-import(
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/display"
-	"github.com/opesun/nocrud/frame/verbinfo"
-	"github.com/opesun/nocrud/frame/highlev"
-	"github.com/opesun/nocrud/frame/misc/scut"
-	"github.com/opesun/numcon"
+import (
 	"fmt"
-	"strconv"
+	"github.com/opesun/nocrud/frame/display"
+	"github.com/opesun/nocrud/frame/highlev"
+	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/misc/scut"
+	"github.com/opesun/nocrud/frame/verbinfo"
+	"github.com/opesun/numcon"
 	"runtime/debug"
+	"strconv"
 )
 
 type m map[string]interface{}
 
-type Top struct{
-	ctx		iface.Context
+type Top struct {
+	ctx iface.Context
 }
 
 func burnResults(vctx iface.ViewContext, key string, b []interface{}) {
@@ -65,7 +65,7 @@ func (t *Top) RouteWS() error {
 }
 
 func (t *Top) routeWS() (err error) {
-	defer func(){
+	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf(fmt.Sprint(r) + string(debug.Stack()))
 		}
@@ -88,7 +88,7 @@ func (t *Top) routeWS() (err error) {
 }
 
 func (t *Top) route() (err error) {
-	defer func(){
+	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf(fmt.Sprint(r) + string(debug.Stack()))
 		}

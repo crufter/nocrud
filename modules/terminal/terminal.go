@@ -1,17 +1,17 @@
 package terminal
 
-import(
+import (
+	"bytes"
+	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/misc/scut"
 	"strings"
 	"text/template"
-	"bytes"
-	"fmt"
 )
 
 type C struct {
-	ctx 		iface.Context
-	nouns 		map[string]interface{}
+	ctx   iface.Context
+	nouns map[string]interface{}
 }
 
 func (c *C) Init(ctx iface.Context) {
@@ -38,8 +38,7 @@ func (c *C) Execute(data map[string]interface{}) (string, error) {
 	if err != nil {
 		return "", strip(err)
 	}
-	context := map[string]interface{}{
-	}
+	context := map[string]interface{}{}
 	var buffer bytes.Buffer
 	err = t.Execute(&buffer, context)
 	if err != nil {
@@ -81,5 +80,5 @@ func stripComments(lines []string) []string {
 }
 
 func strip(e error) error {
-	return fmt.Errorf("line "+e.Error()[16:])
+	return fmt.Errorf("line " + e.Error()[16:])
 }

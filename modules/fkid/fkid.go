@@ -1,13 +1,13 @@
 package fkid
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/sanitize"
 	"strings"
 )
 
 type C struct {
-	ctx		iface.Context
+	ctx iface.Context
 }
 
 func (c *C) Init(ctx iface.Context) {

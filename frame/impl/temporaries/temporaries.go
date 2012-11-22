@@ -1,13 +1,13 @@
 package temporaries
 
-import(
+import (
+	"bytes"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"mime/multipart"
-	"bytes"
 )
 
 type Temporaries struct {
-	files	map[string][]*multipart.FileHeader
+	files map[string][]*multipart.FileHeader
 }
 
 func New(f map[string][]*multipart.FileHeader) *Temporaries {
@@ -20,7 +20,7 @@ func New(f map[string][]*multipart.FileHeader) *Temporaries {
 }
 
 type ReadableFile struct {
-	file 	*multipart.FileHeader
+	file *multipart.FileHeader
 }
 
 func (r *ReadableFile) Read() ([]byte, error) {

@@ -267,7 +267,7 @@ scripts, helping administration and site setup.
 
 For example:
 
-```
+```go
 install "users" "skeleton"
 setScheme "users" `{"name":1,"age":{"type":"number"}}`
 install "cars" "skeleton"

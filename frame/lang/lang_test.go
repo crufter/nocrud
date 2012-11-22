@@ -1,9 +1,9 @@
 package lang_test
 
-import(
-	"testing"
+import (
 	"github.com/opesun/nocrud/frame/lang"
 	"github.com/opesun/nocrud/frame/misc/convert"
+	"testing"
 )
 
 type Values map[string]interface{}
@@ -55,7 +55,7 @@ func TestRoute2(t *testing.T) {
 	}
 }
 
-type MockSpeaker struct {}
+type MockSpeaker struct{}
 
 func (m MockSpeaker) IsNoun(s string) bool {
 	if s == "cars" || s == "comments" {

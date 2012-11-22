@@ -1,20 +1,20 @@
 package display
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"net/http"
 )
 
 type Display struct {
-	w		http.ResponseWriter
-	root	string
-	typ		string
+	w    http.ResponseWriter
+	root string
+	typ  string
 }
 
 func New(w http.ResponseWriter, root string) *Display {
 	return &Display{
-		w:		w,
-		root:	root,
+		w:    w,
+		root: root,
 	}
 }
 

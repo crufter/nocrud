@@ -1,13 +1,13 @@
 package document
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 type Document struct {
-	set		iface.Set
-	data	map[string]interface{}
-	id		iface.Id
+	set  iface.Set
+	data map[string]interface{}
+	id   iface.Id
 }
 
 func New(set iface.Set, data map[string]interface{}) iface.Document {
@@ -24,14 +24,14 @@ func (g *Document) Data() map[string]interface{} {
 
 func (g *Document) Update(upd map[string]interface{}) error {
 	q := map[string]interface{}{
-		"_id": 	g.id,
+		"_id": g.id,
 	}
 	return g.set.Update(q, upd)
 }
 
 func (g *Document) Remove() error {
 	q := map[string]interface{}{
-		"_id": 	g.id,
+		"_id": g.id,
 	}
 	return g.set.Remove(q)
 }

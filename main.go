@@ -1,15 +1,15 @@
 package main
 
 import (
+	"code.google.com/p/go.net/websocket"
+	"fmt"
+	gt "github.com/opesun/gotrigga"
+	"github.com/opesun/nocrud/frame/bang"
+	"github.com/opesun/nocrud/frame/config"
+	"github.com/opesun/nocrud/frame/top"
+	"io"
 	"labix.org/v2/mgo"
 	"net/http"
-	"fmt"
-	"github.com/opesun/nocrud/frame/bang"
-	"github.com/opesun/nocrud/frame/top"
-	"github.com/opesun/nocrud/frame/config"
-	"code.google.com/p/go.net/websocket"
-	gt "github.com/opesun/gotrigga"
-	"io"
 )
 
 func main() {
@@ -65,23 +65,23 @@ func main() {
 	})
 	fmt.Println("Waiting http connections.")
 	http.HandleFunc("/",
-	func(w http.ResponseWriter, req *http.Request) {
-		defer printErr(w)
-		ctx, err := bang.New(conn, session, db, w, req, config)
-		if err != nil {
-			fmt.Fprintf(w, err.Error())
-			return
-		}
-		if ctx == nil {
-			return
-		}
-		top := top.New(ctx)
-		err = top.Route()
-		if err != nil {
-			fmt.Fprintf(w, err.Error())
-		}
-	})
-	err = http.ListenAndServe(config.Addr + ":" + config.PortNum, nil)
+		func(w http.ResponseWriter, req *http.Request) {
+			defer printErr(w)
+			ctx, err := bang.New(conn, session, db, w, req, config)
+			if err != nil {
+				fmt.Fprintf(w, err.Error())
+				return
+			}
+			if ctx == nil {
+				return
+			}
+			top := top.New(ctx)
+			err = top.Route()
+			if err != nil {
+				fmt.Fprintf(w, err.Error())
+			}
+		})
+	err = http.ListenAndServe(config.Addr+":"+config.PortNum, nil)
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -1,13 +1,13 @@
 package file
 
-import(
-	"os"
+import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
 type File struct {
-	path	string
+	path string
 }
 
 func New(path string) *File {

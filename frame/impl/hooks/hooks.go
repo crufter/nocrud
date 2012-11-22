@@ -1,27 +1,27 @@
 package hooks
 
-import(
+import (
+	"fmt"
 	"github.com/opesun/jsonp"
 	iface "github.com/opesun/nocrud/frame/interfaces"
-	"strings"
 	"reflect"
-	"fmt"
+	"strings"
 )
 
 // Used to call subscribed hooks.
 type Hooks struct {
-	hooks		map[string]interface{}
-	newModule	func(string) iface.Module
-	initer		func(iface.Instance) error
-	cache		map[string]iface.Instance		// Module instance cache.
+	hooks     map[string]interface{}
+	newModule func(string) iface.Module
+	initer    func(iface.Instance) error
+	cache     map[string]iface.Instance // Module instance cache.
 }
 
 type Hook struct {
-				*Hooks
-	Hookname	string
+	*Hooks
+	Hookname string
 }
 
-func New(hooks map[string]interface{}, newModule func(string)iface.Module) *Hooks {
+func New(hooks map[string]interface{}, newModule func(string) iface.Module) *Hooks {
 	if hooks == nil {
 		hooks = map[string]interface{}{}
 	}
@@ -33,7 +33,7 @@ func New(hooks map[string]interface{}, newModule func(string)iface.Module) *Hook
 	}
 }
 
-func (e *Hooks) Initer(initer func(iface.Instance)error) {
+func (e *Hooks) Initer(initer func(iface.Instance) error) {
 	e.initer = initer
 }
 
@@ -45,8 +45,8 @@ func (e *Hooks) Select(Hookname string) iface.Hook {
 }
 
 type subscriber struct {
-	modName			string
-	methodName		string
+	modName    string
+	methodName string
 }
 
 func (s *subscriber) Name() string {
@@ -92,10 +92,10 @@ func (e *Hook) Subscribers() []iface.Subscriber {
 
 // This is an iface.Module, which wraps the github.com/opesun/nocrud/frame/mod implementation and implements instance caching.
 type InstanceCacher struct {
-				iface.Module
-	cache 		map[string]iface.Instance
-	initer		func(iface.Instance) error
-	name		string
+	iface.Module
+	cache  map[string]iface.Instance
+	initer func(iface.Instance) error
+	name   string
 }
 
 func (m InstanceCacher) Instance() iface.Instance {
@@ -215,7 +215,7 @@ func (e *Hook) iterate(hookName string, stopfunc interface{}, params ...interfac
 		}
 		if stopfunc != nil {
 			if stopfunc_numin != len(hook_outp) {
-				panic(fmt.Sprintf("The number of return values of Hook %v of %v differs from the number of arguments of stopfunc.", hinf.methodName, hinf.modName))	// This sentence...
+				panic(fmt.Sprintf("The number of return values of Hook %v of %v differs from the number of arguments of stopfunc.", hinf.methodName, hinf.modName)) // This sentence...
 			}
 			stopf := reflect.ValueOf(stopfunc)
 			stopf_ret := stopf.Call(hook_outp)

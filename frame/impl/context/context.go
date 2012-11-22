@@ -1,32 +1,32 @@
 package context
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 type Context struct {
-	conducting		iface.Conducting
-	fileSys			iface.FileSys
-	user			iface.User
-	client	 		iface.Client
-	db				iface.Db
-	channels		iface.Channels
-	viewContext		iface.ViewContext
-	nonPortable		iface.NonPortable
-	display			iface.Display
-	options			iface.Options
+	conducting  iface.Conducting
+	fileSys     iface.FileSys
+	user        iface.User
+	client      iface.Client
+	db          iface.Db
+	channels    iface.Channels
+	viewContext iface.ViewContext
+	nonPortable iface.NonPortable
+	display     iface.Display
+	options     iface.Options
 }
 
-func New(	cond 	iface.Conducting,
-			f 		iface.FileSys,
-			u 		iface.User,
-			c 		iface.Client,
-			db 		iface.Db,
-			ch 		iface.Channels,
-			v 		iface.ViewContext,
-			n 		iface.NonPortable,
-			d		iface.Display,
-			o		iface.Options,
+func New(cond iface.Conducting,
+	f iface.FileSys,
+	u iface.User,
+	c iface.Client,
+	db iface.Db,
+	ch iface.Channels,
+	v iface.ViewContext,
+	n iface.NonPortable,
+	d iface.Display,
+	o iface.Options,
 ) iface.Context {
 	return &Context{
 		cond, f, u, c, db, ch, v, n, d, o,

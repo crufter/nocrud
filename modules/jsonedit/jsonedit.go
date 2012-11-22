@@ -1,16 +1,16 @@
 package jsonedit
 
-import(
+import (
 	"encoding/json"
+	"fmt"
 	"github.com/opesun/nocrud/frame/composables/basics"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"time"
-	"fmt"
 )
 
 type C struct {
-			basics.Basics
-	opt		map[string]interface{}
+	basics.Basics
+	opt map[string]interface{}
 }
 
 func (c *C) Init(ctx iface.Context) {
@@ -36,7 +36,7 @@ func (c *C) Insert(a iface.Filter, data map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	m["created"] = time.Now().UnixNano()	// Should include user too maybe.
+	m["created"] = time.Now().UnixNano() // Should include user too maybe.
 	return a.Insert(m)
 }
 

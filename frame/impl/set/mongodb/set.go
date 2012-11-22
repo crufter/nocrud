@@ -1,11 +1,11 @@
 package set
 
-import(
-	"github.com/opesun/nocrud/frame/misc/convert"
+import (
+	"encoding/base64"
 	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/misc/convert"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"encoding/base64"
 )
 
 func New(db *mgo.Database, coll string) iface.Set {
@@ -19,11 +19,11 @@ func New(db *mgo.Database, coll string) iface.Set {
 }
 
 type Set struct {
-	db 		*mgo.Database
-	coll 	string
-	skip	int
-	limit	int
-	sort	[]string
+	db    *mgo.Database
+	coll  string
+	skip  int
+	limit int
+	sort  []string
 }
 
 func (s *Set) Skip(i int) {
@@ -125,14 +125,14 @@ func toGeneral(a interface{}) (interface{}, bool) {
 	return &Id{
 		val,
 	}, true
-} 
+}
 
 func (s *Set) Name() string {
 	return s.coll
 }
 
 type Id struct {
-	i		bson.ObjectId
+	i bson.ObjectId
 }
 
 func (id *Id) String() string {
@@ -161,7 +161,7 @@ func IsId(encodedForm string) bool {
 func decodeId(s string) (bson.ObjectId, error) {
 	val, err := base64.URLEncoding.DecodeString(s)
 	if err != nil {
-		panic("Can't decode id: "+ err.Error())
+		panic("Can't decode id: " + err.Error())
 	}
 	return bson.ObjectId(val), nil
 }

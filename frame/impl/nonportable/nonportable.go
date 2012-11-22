@@ -1,14 +1,14 @@
 package nonportable
 
-import(
+import (
 	"net/http"
 )
 
 type NonPortable struct {
-	path		string
-	params		map[string]interface{}
-	req			*http.Request
-	w			http.ResponseWriter
+	path   string
+	params map[string]interface{}
+	req    *http.Request
+	w      http.ResponseWriter
 }
 
 func New(path string, params map[string]interface{}, req *http.Request, w http.ResponseWriter) *NonPortable {
@@ -28,7 +28,7 @@ func (n *NonPortable) Params() map[string]interface{} {
 	return n.params
 }
 
-func (n *NonPortable) ComingFrom()	string {
+func (n *NonPortable) ComingFrom() string {
 	return n.req.Referer()
 }
 

@@ -1,14 +1,14 @@
 package hooks_test
 
-import(
-	iface "github.com/opesun/nocrud/frame/interfaces"
+import (
 	"github.com/opesun/nocrud/frame/hooks"
+	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/mod"
 	"testing"
 )
 
 type M struct {
-	name	string
+	name string
 }
 
 func (m *M) Instance() iface.Instance {
@@ -76,7 +76,7 @@ func TestMethodDispatch(t *testing.T) {
 	if a != 1 {
 		t.Fatal(a)
 	}
-	ev.Fire("HookC")	// Nothing should happend when we call a not existing Hook.
+	ev.Fire("HookC") // Nothing should happend when we call a not existing Hook.
 	if a != 1 {
 		t.Fatal(a)
 	}
@@ -100,7 +100,7 @@ func TestStatePreserving(t *testing.T) {
 	if called != 0 {
 		t.Fatal(called)
 	}
-	for i:=0;i<10;i++ {
+	for i := 0; i < 10; i++ {
 		ev.Fire("HookA", "dummy data")
 		if called != i+1 {
 			t.Fatal(called)

@@ -4,19 +4,19 @@
 package users
 
 import (
+	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/modules/users/model"
-	"fmt"
 )
 
 type C struct {
-	client	iface.Client
-	db		iface.Db
+	client iface.Client
+	db     iface.Db
 }
 
 func (c *C) Init(ctx iface.Context) {
 	c.client = ctx.Client()
-	c.db	= ctx.Db()
+	c.db = ctx.Db()
 }
 
 func (a *C) Insert(f iface.Filter, data map[string]interface{}) (iface.Id, error) {
@@ -65,7 +65,7 @@ func (a *C) Login(f iface.Filter, data map[string]interface{}) error {
 	pass := data["password"].(string)
 	// Maybe there could be a check here to not log in somebody who is already logged in.
 	if user, err := user_model.FindLogin(f, name, pass); err == nil {
-		a.client.StoreEncrypted("user", f.Subject() + "|" + user.Id().String())
+		a.client.StoreEncrypted("user", f.Subject()+"|"+user.Id().String())
 	} else {
 		return err
 	}

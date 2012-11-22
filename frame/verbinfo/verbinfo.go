@@ -1,8 +1,8 @@
 package verbinfo
 
-import(
-	"reflect"
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
+	"reflect"
 )
 
 type Analyzer struct {
@@ -24,7 +24,7 @@ func (a *Analyzer) FilterCount() int {
 	ft := reflect.TypeOf(i).Elem()
 	for _, v := range inptypes {
 		if v.Implements(ft) {
-			c++	// lol.
+			c++ // lol.
 		}
 	}
 	return c

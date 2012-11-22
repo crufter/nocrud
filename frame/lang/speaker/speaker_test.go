@@ -1,8 +1,8 @@
 package speaker_test
 
-import(
-	"testing"
+import (
 	"github.com/opesun/nocrud/frame/lang/speaker"
+	"testing"
 )
 
 func moduleHasVerb(n, v string) bool {
@@ -15,7 +15,7 @@ func moduleHasVerb(n, v string) bool {
 	return false
 }
 
-func Test0 (t *testing.T) {
+func Test0(t *testing.T) {
 	mockNounOpt := map[string]interface{}{
 		"cars": map[string]interface{}{
 			"composed_of": []interface{}{"testModuleA"},
@@ -30,7 +30,7 @@ func Test0 (t *testing.T) {
 	}
 }
 
-func Test1 (t *testing.T) {
+func Test1(t *testing.T) {
 	mockNounOpt := map[string]interface{}{
 		"cars": map[string]interface{}{
 			"composed_of": []interface{}{"testModuleA"},
@@ -45,7 +45,7 @@ func Test1 (t *testing.T) {
 	}
 }
 
-func TestVerbLocation (t *testing.T) {
+func TestVerbLocation(t *testing.T) {
 	mockNounOpt := map[string]interface{}{
 		"cars": map[string]interface{}{
 			"composed_of": []interface{}{"testModuleA"},
@@ -63,5 +63,3 @@ func TestVerbLocation (t *testing.T) {
 		t.Fatal()
 	}
 }
-
-

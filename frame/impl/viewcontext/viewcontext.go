@@ -1,11 +1,11 @@
 package viewcontext
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 type ViewContext struct {
-	context		map[string]interface{}
+	context map[string]interface{}
 }
 
 func New() *ViewContext {

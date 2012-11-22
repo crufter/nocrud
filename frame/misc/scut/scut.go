@@ -77,8 +77,8 @@ func GetTPath(opt map[string]interface{}, host string) string {
 }
 
 type modTPath struct {
-	modname		string
-	fpath		string
+	modname string
+	fpath   string
 }
 
 // Inp:	"admin/this/that.txt"
@@ -167,7 +167,7 @@ func GetNouns(odoc iface.NestedData) map[string]interface{} {
 	nouns, ok := odoc.GetM("nouns")
 	if !ok {
 		nouns = map[string]interface{}{
-			"options": opt_def,
+			"options":  opt_def,
 			"terminal": term_def,
 		}
 	}

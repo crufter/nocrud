@@ -1,11 +1,11 @@
 package fulltext
 
-import(
+import (
+	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/slugify"
 	"labix.org/v2/mgo/bson"
 	"strings"
-	"fmt"
 )
 
 type C struct {
@@ -122,7 +122,7 @@ func GenerateQuery(s string) []interface{} {
 	return and
 }
 
-func (c *C) ProcessMap(inp map[string]interface{}) {
+func (c *C) ProcessQuery(inp map[string]interface{}) {
 	val, has := inp["search"].(string)
 	if !has {
 		return
@@ -135,8 +135,8 @@ func (c *C) Install(o iface.Document, s string) error {
 	upd := map[string]interface{}{
 		"$addToSet": map[string]interface{}{
 			fmt.Sprintf("Hooks.%vInserted", s): []interface{}{"fulltext", "SaveFulltext"},
-			fmt.Sprintf("Hooks.%vUpdated", s): []interface{}{"fulltext", "SaveFulltext"},
-			"Hooks.ProcessMap": "fulltext",
+			fmt.Sprintf("Hooks.%vUpdated", s):  []interface{}{"fulltext", "SaveFulltext"},
+			"Hooks.ProcessQuery":               "fulltext",
 		},
 	}
 	return o.Update(upd)
@@ -146,8 +146,8 @@ func (c *C) Uninstall(o iface.Document, s string) error {
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
 			fmt.Sprintf("Hooks.%vInserted", s): []interface{}{"fulltext", "SaveFulltext"},
-			fmt.Sprintf("Hooks.%vUpdated", s): []interface{}{"fulltext", "SaveFulltext"},
-			"Hooks.ProcessMap": "fulltext",
+			fmt.Sprintf("Hooks.%vUpdated", s):  []interface{}{"fulltext", "SaveFulltext"},
+			"Hooks.ProcessQuery":               "fulltext",
 		},
 	}
 	return o.Update(upd)

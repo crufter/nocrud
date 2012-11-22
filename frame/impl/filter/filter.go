@@ -1,20 +1,20 @@
 package filter
 
-import(
+import (
 	"fmt"
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/impl/set/mongodb"	// ...
 	"github.com/opesun/nocrud/frame/impl/document"
+	"github.com/opesun/nocrud/frame/impl/set/mongodb" // ...
+	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/sanitize"
 )
 
 type Mods struct {
-	skip		int
-	limit		int
-	sort		[]string
+	skip  int
+	limit int
+	sort  []string
 }
 
-func (m *Mods)  Skip() int {
+func (m *Mods) Skip() int {
 	return m.skip
 }
 
@@ -29,31 +29,34 @@ func (m *Mods) Sort() []string {
 // Parents are separated from the query, because they are not used only at querying (FindOne, Find, Update, UpdateAll, Remove, RemoveAll),
 // but at Insert too.
 type Filter struct {
-	set				iface.Set
-	mods			*Mods
-	parentField		map[string]string				// collection_name => fieldname, being used at reduction, shortcoming: 1 collection to 1 fieldname only...
-	parents			map[string][]iface.Id			// fieldnames => parent ids
-	query			map[string]interface{}
-	hooks			iface.Hooks
+	set         iface.Set
+	mods        *Mods
+	parentField map[string]string     // collection_name => fieldname, being used at reduction, shortcoming: 1 collection to 1 fieldname only...
+	parents     map[string][]iface.Id // fieldnames => parent ids
+	query       map[string]interface{}
+	hooks       iface.Hooks
+	scheme      map[string]interface{}
 }
 
-func NewSimple(set iface.Set, hooks iface.Hooks) (*Filter, error) {
+func NewSimple(set iface.Set, hooks iface.Hooks, scheme map[string]interface{}) (*Filter, error) {
 	return &Filter{
-		set:			set,
-		parents:		map[string][]iface.Id{},
-		hooks:			hooks,
+		set:     set,
+		parents: map[string][]iface.Id{},
+		hooks:   hooks,
+		scheme:  scheme,
 	}, nil
 }
 
-func New(set iface.Set, hooks iface.Hooks, all map[string]interface{}) (*Filter, error) {
-	d := processMap(all, hooks)
+func New(set iface.Set, hooks iface.Hooks, scheme, input map[string]interface{}) (*Filter, error) {
+	d := processQuery(hooks, scheme, input)
 	f := &Filter{
-		set:			set,
-		mods:			d.mods,
+		set:  set,
+		mods: d.mods,
 		//parentField:	d.parentField,
-		query:			d.query,
-		parents:		map[string][]iface.Id{},
-		hooks:			hooks,
+		query:   d.query,
+		parents: map[string][]iface.Id{},
+		hooks:   hooks,
+		scheme:  scheme,
 	}
 	return f, nil
 }
@@ -78,7 +81,7 @@ func (f *Filter) Reduce(a ...iface.Filter) (iface.Filter, error) {
 		if err != nil {
 			return &Filter{}, err
 		}
-		v.AddParents("_" + prev.Subject(), ids)
+		v.AddParents("_"+prev.Subject(), ids)
 		prev = v
 	}
 	return prev, nil
@@ -86,14 +89,14 @@ func (f *Filter) Reduce(a ...iface.Filter) (iface.Filter, error) {
 
 // Information coming from url.Values/map
 type data struct {
-	query 		map[string]interface{}
-	mods		*Mods
-	parentField	string
+	query       map[string]interface{}
+	mods        *Mods
+	parentField string
 }
 
 // Special fields in query:
 // parentf, sort, limit, skip, page
-func processMap(inp map[string]interface{}, hooks iface.Hooks) *data {
+func processQuery(hooks iface.Hooks, scheme, inp map[string]interface{}) *data {
 	d := &data{}
 	if inp == nil {
 		inp = map[string]interface{}{}
@@ -103,10 +106,10 @@ func processMap(inp map[string]interface{}, hooks iface.Hooks) *data {
 	}
 	sch := map[string]interface{}{
 		//"parentf": 1,
-		"sort": 1,
-		"skip": int_sch,
+		"sort":  1,
+		"skip":  int_sch,
 		"limit": int_sch,
-		"page": int_sch,
+		"page":  int_sch,
 	}
 	ex, err := sanitize.New(sch)
 	if err != nil {
@@ -133,11 +136,22 @@ func processMap(inp map[string]interface{}, hooks iface.Hooks) *data {
 	}
 	if dat["page"] != nil {
 		page := int(dat["page"].(int64))
-		mods.skip = (page-1)*mods.limit
+		mods.skip = (page - 1) * mods.limit
 	}
 	d.mods = mods
 	if hooks != nil {
-		hooks.Select("ProcessMap").Fire(inp)	// We should let the subscriber now the subject name maybe.
+		hooks.Select("ProcessQuery").Fire(inp) // We should let the subscriber now the subject name maybe.
+	}
+	if scheme != nil {
+		ex, err = sanitize.New(scheme)
+		if err != nil {
+			panic(err)
+		}
+		dat, err := ex.Extract(inp)
+		if err != nil {
+			panic(err)
+		}
+		inp = dat
 	}
 	d.query = toQuery(inp)
 	return d
@@ -169,7 +183,7 @@ func toQuery(a map[string]interface{}) map[string]interface{} {
 		} else {
 			vi = _append(vi, &i, v)
 		}
-		if len(vi) > 1 {		// Ex: {"$and": [{"fulltext": ^"whateverr"}, {...}]}
+		if len(vi) > 1 { // Ex: {"$and": [{"fulltext": ^"whateverr"}, {...}]}
 			r[i] = map[string]interface{}{
 				"$in": vi,
 			}
@@ -199,7 +213,7 @@ func (f *Filter) Modifiers() iface.Modifiers {
 }
 
 func (f *Filter) AddQuery(q map[string]interface{}) iface.Filter {
-	query := processMap(q, f.hooks).query
+	query := processQuery(f.hooks, f.scheme, q).query
 	for i, v := range f.query {
 		query[i] = v
 	}

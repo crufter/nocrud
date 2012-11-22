@@ -1,14 +1,14 @@
 package evenday_test
 
-import(
+import (
 	"github.com/opesun/nocrud/modules/pretime/evenday"
-	"testing"
 	"strconv"
+	"testing"
 )
 
 func TestStringToMinute(t *testing.T) {
-	for hour:=0;hour<24;hour++{
-		for min:=0;min<60;min++{
+	for hour := 0; hour < 24; hour++ {
+		for min := 0; min < 60; min++ {
 			hStr := strconv.Itoa(hour)
 			mStr := strconv.Itoa(min)
 			mins, ok := evenday.StringToMinute(hStr + ":" + mStr)
@@ -133,7 +133,7 @@ func TestGenericToTimeTable(t *testing.T) {
 	weekday := []interface{}{
 		map[string]interface{}{
 			"from": int(toMinute(8, 0)),
-			"to": int(toMinute(17, 0)),
+			"to":   int(toMinute(17, 0)),
 		},
 	}
 	weekend := []interface{}{}

@@ -1,19 +1,19 @@
 package glue
 
-import(
-	"github.com/opesun/nocrud/frame/mod"
-	"github.com/opesun/nocrud/frame/lang"
-	"github.com/opesun/nocrud/frame/lang/speaker"
+import (
 	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/lang"
+	"github.com/opesun/nocrud/frame/lang/speaker"
+	"github.com/opesun/nocrud/frame/mod"
 	"github.com/opesun/nocrud/frame/verbinfo"
 )
 
 type Descriptor struct {
-	Route 			*lang.Route
-	Sentence 		*lang.Sentence
-	VerbLocation	string						// Name of the module with the verb.
-	nounOpt			map[string]interface{}
+	Route        *lang.Route
+	Sentence     *lang.Sentence
+	VerbLocation string // Name of the module with the verb.
+	nounOpt      map[string]interface{}
 }
 
 func moduleHasVerb(modname string, verbname string) bool {
@@ -51,7 +51,7 @@ func Identify(path string, nouns map[string]interface{}, inp map[string]interfac
 }
 
 // Returns error if input is not valid according to the rules found in d.nouns
-func (d *Descriptor) CreateInputs(filterCreator func(string, map[string]interface{})(iface.Filter,error)) ([]interface{}, map[string]interface{}, error) {
+func (d *Descriptor) CreateInputs(filterCreator func(string, map[string]interface{}) (iface.Filter, error)) ([]interface{}, map[string]interface{}, error) {
 	module := mod.NewModule(d.VerbLocation)
 	if !module.Exists() {
 		return nil, nil, fmt.Errorf("Module named %v does not exist.", d.VerbLocation)
@@ -79,7 +79,7 @@ func (d *Descriptor) CreateInputs(filterCreator func(string, map[string]interfac
 	if an.NeedsData() {
 		data = source[len(source)-1]
 		if data == nil {
-			data = map[string]interface{}{}		// !Important.
+			data = map[string]interface{}{} // !Important.
 		}
 	}
 	if fc > 0 {

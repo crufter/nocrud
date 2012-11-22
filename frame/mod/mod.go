@@ -1,7 +1,7 @@
 // This package gets around the lack of dynamic code loading in Go.
 package mod
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"reflect"
 	"unicode"
@@ -50,7 +50,7 @@ func (i Instance) MethodNames() []string {
 	t := reflect.TypeOf(reflect.Value(i).Interface())
 	names := []string{}
 	num := t.NumMethod()
-	for i:=0;i<num;i++{
+	for i := 0; i < num; i++ {
 		mname := t.Method(i).Name
 		r, _ := utf8.DecodeRuneInString(mname)
 		if unicode.IsUpper(r) {
@@ -60,7 +60,7 @@ func (i Instance) MethodNames() []string {
 	return names
 }
 
-func(i Instance) Method(s string) iface.Method {
+func (i Instance) Method(s string) iface.Method {
 	return Method(reflect.Value(i).MethodByName(s))
 }
 
@@ -82,7 +82,7 @@ func inputs(meth reflect.Value) []reflect.Type {
 	mtype := meth.Type()
 	in := mtype.NumIn()
 	ret := []reflect.Type{}
-	for i:=0;i<in;i++{
+	for i := 0; i < in; i++ {
 		ret = append(ret, mtype.In(i))
 	}
 	return ret
@@ -96,7 +96,7 @@ func outputs(meth reflect.Value) []reflect.Type {
 	mtype := meth.Type()
 	out := mtype.NumOut()
 	ret := []reflect.Type{}
-	for i:=0;i<out;i++{
+	for i := 0; i < out; i++ {
 		ret = append(ret, mtype.Out(i))
 	}
 	return ret
@@ -107,7 +107,6 @@ func (me Method) OutputTypes() []reflect.Type {
 }
 
 // Mathes signature
-func (me Method) Matches(i interface{}) bool  {
+func (me Method) Matches(i interface{}) bool {
 	return true
 }
-

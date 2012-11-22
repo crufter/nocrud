@@ -1,15 +1,15 @@
 package user
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/numcon"
 	"strings"
 )
 
 type User struct {
-				iface.Document
-	level		int
-	languages	[]string
+	iface.Document
+	level     int
+	languages []string
 }
 
 func New(db iface.Db, hooks iface.Hooks, client iface.Client) *User {
@@ -58,7 +58,7 @@ func _new(db iface.Db, hooks iface.Hooks, client iface.Client) (*User, error) {
 	} else {
 		langs = []string{"en"}
 	}
-	return &User {
+	return &User{
 		userDoc,
 		numcon.IntP(userDoc.Data()["level"]),
 		langs,
@@ -80,7 +80,7 @@ func emptyUser(client iface.Client) *User {
 	if langs == nil {
 		langs = []string{"en"}
 	}
-	return &User {
+	return &User{
 		nil,
 		0,
 		langs,

@@ -1,20 +1,20 @@
 package display
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"io"
 )
 
 type Display struct {
-	w		io.Writer
-	root	string
-	typ		string
+	w    io.Writer
+	root string
+	typ  string
 }
 
 func New(w io.Writer, root string) *Display {
 	return &Display{
-		w:		w,
-		root:	root,
+		w:    w,
+		root: root,
 	}
 }
 

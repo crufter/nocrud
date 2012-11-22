@@ -1,16 +1,16 @@
 package user_model
 
 import (
-	iface "github.com/opesun/nocrud/frame/interfaces"
 	"crypto/sha1"
 	"fmt"
+	iface "github.com/opesun/nocrud/frame/interfaces"
 	"io"
 )
 
 func FindLogin(a iface.Filter, name, password string) (iface.Document, error) {
 	encoded_pass := hashPass(password)
 	q := map[string]interface{}{
-		"name": name,
+		"name":     name,
 		"password": encoded_pass,
 	}
 	return a.AddQuery(q).SelectOne()

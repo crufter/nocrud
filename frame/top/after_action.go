@@ -1,11 +1,11 @@
 package top
 
-import(
-	"net/url"
-	"strings"
-	"fmt"
+import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"strconv"
+	"strings"
 )
 
 // After running a background operation this either redirects with data in url paramters or prints out the json encoded result.

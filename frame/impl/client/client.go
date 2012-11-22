@@ -1,23 +1,23 @@
 package client
 
-import(
-	"net/http"
+import (
+	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"strings"
-	"crypto/aes"
 	"fmt"
+	"net/http"
+	"strings"
 )
 
 type Client struct {
-	w					http.ResponseWriter
-	req					*http.Request
-	requestHeader		map[string][]string
-	secret				[]byte
-	expires				int
-	where				string
+	w             http.ResponseWriter
+	req           *http.Request
+	requestHeader map[string][]string
+	secret        []byte
+	expires       int
+	where         string
 }
 
 func New(w http.ResponseWriter, req *http.Request, requestHeader map[string][]string, secret string) *Client {
@@ -53,7 +53,7 @@ func (c *Client) StoreEncrypted(key string, val interface{}) error {
 	cookie := &http.Cookie{
 		Name:   key,
 		Value:  enc,
-		MaxAge:	c.expires,
+		MaxAge: c.expires,
 		Path:   c.where,
 	}
 	http.SetCookie(c.w, cookie)
@@ -82,10 +82,10 @@ func (c *Client) GetDecrypted(key string) (interface{}, error) {
 
 func (c *Client) Unstore(key string) error {
 	cookie := &http.Cookie{
-		Name: 	key,
-		Value: 	"",
+		Name:   key,
+		Value:  "",
 		MaxAge: c.expires,
-		Path: 	c.where,
+		Path:   c.where,
 	}
 	http.SetCookie(c.w, cookie)
 	return nil
@@ -108,7 +108,7 @@ func parseAcceptLanguage(l string) []string {
 
 // Creates a list of 2 char language abbreviations (for example: []string{"en", "de", "hu"}) out of the value of http header "Accept-Language".
 func parseAcceptLanguageSafe(l string) (ret []string) {
-	defer func(){
+	defer func() {
 		r := recover()
 		if r != nil {
 			ret = []string{"en"}

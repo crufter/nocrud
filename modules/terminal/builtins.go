@@ -1,10 +1,10 @@
 package terminal
 
-import(
+import (
+	"encoding/json"
+	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"reflect"
-	"fmt"
-	"encoding/json"
 )
 
 func latestOptdoc(db iface.Db) (iface.Document, error) {
@@ -81,8 +81,8 @@ func (c *C) uninstall(resource, module string) error {
 }
 
 type verb struct {
-	Verb	string
-	Module	string
+	Verb   string
+	Module string
 }
 
 func (c *C) verbs(resource string) ([]verb, error) {
@@ -120,7 +120,7 @@ func setTemplate(typ, name string) error {
 	return fmt.Errorf("Not implemented yet.")
 }
 
-var argLabels = []string{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"}
+var argLabels = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
 // Returns the help for a given command.
 func help(funcMap map[string]interface{}, funcName string) string {
@@ -131,9 +131,9 @@ func help(funcMap map[string]interface{}, funcName string) string {
 	v := reflect.TypeOf(fun)
 	ret := ""
 	ret = ret + fmt.Sprintf("\nfunc %v(", funcName)
-	for i:=0;i<v.NumIn();i++{
-		ret = ret+argLabels[i]+" "+fmt.Sprint(v.In(i))
-		if i<v.NumIn()-1 {
+	for i := 0; i < v.NumIn(); i++ {
+		ret = ret + argLabels[i] + " " + fmt.Sprint(v.In(i))
+		if i < v.NumIn()-1 {
 			ret = ret + ", "
 		}
 	}
@@ -141,9 +141,9 @@ func help(funcMap map[string]interface{}, funcName string) string {
 	if v.NumOut() > 1 {
 		ret = ret + "("
 	}
-	for i:=0;i<v.NumOut();i++{
+	for i := 0; i < v.NumOut(); i++ {
 		ret = ret + fmt.Sprint(v.Out(i))
-		if i<v.NumOut()-1 {
+		if i < v.NumOut()-1 {
 			ret = ret + ", "
 		}
 	}
@@ -213,15 +213,15 @@ func (c *C) builtins() map[string]interface{} {
 		"uninstall": func(resource, module string) error {
 			return c.uninstall(resource, module)
 		},
-		"chost": chost,
+		"chost":    chost,
 		"setTempl": setTemplate,
-		"jsondec": jsondec,
+		"jsondec":  jsondec,
 		"setScheme": func(resource, jsn string) error {
 			return c.setScheme(resource, jsn)
 		},
-		"tagOpt": tagOpt,
-		"saveOpt": saveOpt,
-		"revert": revert,
+		"tagOpt":   tagOpt,
+		"saveOpt":  saveOpt,
+		"revert":   revert,
 		"findComm": findCommand,
 		"composed": func(r string) []string {
 			return c.composed(r)

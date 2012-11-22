@@ -1,12 +1,12 @@
 package evenday
 
-import(
-	"github.com/opesun/numcon"
-	"time"
-	"strings"
-	"strconv"
-	"fmt"
+import (
 	"encoding/json"
+	"fmt"
+	"github.com/opesun/numcon"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type DayName int
@@ -31,20 +31,20 @@ const (
 func DateToDayName(n int64) DayName {
 	t := time.Unix(n, 0)
 	_, week := t.ISOWeek()
-	odd := week%2==1
+	odd := week%2 == 1
 	day := t.Weekday()
 	if odd {
 		return DayName(day)
 	}
-	return DayName(day+7)
+	return DayName(day + 7)
 }
 
 // Xth minute of a day. 0th minute is 0:00
 type Minute int
 
 func (m Minute) String() string {
-	hour := m/60
-	minute := m%60
+	hour := m / 60
+	minute := m % 60
 	return strconv.Itoa(int(hour)) + ":" + strconv.Itoa(int(minute))
 }
 
@@ -55,7 +55,7 @@ func ToMinute(hour, minute int) (Minute, error) {
 	if minute < 0 || minute > 59 {
 		return 0, fmt.Errorf("Minute is not proper.")
 	}
-	return Minute(hour*60+minute), nil
+	return Minute(hour*60 + minute), nil
 }
 
 // Converts strings like "8:10" or "08:10" to minutes like 8*60+10
@@ -79,8 +79,8 @@ func StringToMinute(s string) (Minute, bool) {
 }
 
 type Interval struct {
-	from	Minute
-	to		Minute
+	from Minute
+	to   Minute
 }
 
 // Convenience function.
@@ -107,7 +107,7 @@ func (i *Interval) To() Minute {
 func (i *Interval) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"from": i.from,
-		"to": i.to,
+		"to":   i.to,
 	})
 }
 

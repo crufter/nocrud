@@ -1,29 +1,29 @@
 package config
 
-import(
+import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"fmt"
-	"encoding/json"
 )
 
 // See handleFlags methods about these vars and their uses.
-type Config struct{
-	AbsPath		string
-	ConfFn		string
-	DBAdmMode	bool
-	DBUser		string
-	DBPass		string
-	DBAddr		string
-	MsgAddr		string
-	Debug		bool
-	DBName		string
-	Addr		string
-	PortNum		string
-	CacheOpt	bool
-	ServeFiles	bool
-	Secret		string
+type Config struct {
+	AbsPath    string
+	ConfFn     string
+	DBAdmMode  bool
+	DBUser     string
+	DBPass     string
+	DBAddr     string
+	MsgAddr    string
+	Debug      bool
+	DBName     string
+	Addr       string
+	PortNum    string
+	CacheOpt   bool
+	ServeFiles bool
+	Secret     string
 }
 
 var cli = Config{}
@@ -86,19 +86,19 @@ func (c *Config) LoadFromFile() {
 }
 
 func args() {
-	flag.StringVar(	&cli.AbsPath, 		"abs_path", 	"c:/gowork/src/github.com/opesun/nocrud", "absolute path")
-	flag.StringVar(	&cli.ConfFn, 		"conf_fn", 		"config.json", 		"config filename")
-	flag.BoolVar(	&cli.DBAdmMode, 	"db_adm_mode", 	false, 				"connect to database as an admin")
-	flag.StringVar(	&cli.DBUser, 		"db_user", 		"", 				"database username")
-	flag.StringVar(	&cli.DBPass, 		"db_pass", 		"", 				"database password")
-	flag.StringVar(	&cli.DBAddr, 		"db_addr", 		"127.0.0.1:27017", 	"database address")
-	flag.StringVar(	&cli.MsgAddr, 		"msg_addr", 	"", 				"message passing server address")
-	flag.StringVar(	&cli.DBName, 		"db_name", 		"nocrud", 			"db name to connect to")
-	flag.BoolVar(	&cli.Debug, 		"debug", 		true, 				"debug mode")
-	flag.StringVar(	&cli.PortNum, 		"p", 			"80", 				"port to listen on")
-	flag.StringVar(	&cli.Addr, 			"addr", 		"", 				"address to start http server")
-	flag.BoolVar(	&cli.CacheOpt, 		"cache_opt", 	false, 				"cache option document")
-	flag.BoolVar(	&cli.ServeFiles, 	"serve_files", 	true, 				"serve files from Go or not")
-	flag.StringVar(	&cli.Secret, 		"secret", 		"pLsCh4nG3Th1$.AlSoThisShouldbeatLeast16bytes", "secret characters used for encryption and the like")
+	flag.StringVar(&cli.AbsPath, "abs_path", "c:/gowork/src/github.com/opesun/nocrud", "absolute path")
+	flag.StringVar(&cli.ConfFn, "conf_fn", "config.json", "config filename")
+	flag.BoolVar(&cli.DBAdmMode, "db_adm_mode", false, "connect to database as an admin")
+	flag.StringVar(&cli.DBUser, "db_user", "", "database username")
+	flag.StringVar(&cli.DBPass, "db_pass", "", "database password")
+	flag.StringVar(&cli.DBAddr, "db_addr", "127.0.0.1:27017", "database address")
+	flag.StringVar(&cli.MsgAddr, "msg_addr", "", "message passing server address")
+	flag.StringVar(&cli.DBName, "db_name", "nocrud", "db name to connect to")
+	flag.BoolVar(&cli.Debug, "debug", true, "debug mode")
+	flag.StringVar(&cli.PortNum, "p", "80", "port to listen on")
+	flag.StringVar(&cli.Addr, "addr", "", "address to start http server")
+	flag.BoolVar(&cli.CacheOpt, "cache_opt", false, "cache option document")
+	flag.BoolVar(&cli.ServeFiles, "serve_files", true, "serve files from Go or not")
+	flag.StringVar(&cli.Secret, "secret", "pLsCh4nG3Th1$.AlSoThisShouldbeatLeast16bytes", "secret characters used for encryption and the like")
 	flag.Parse()
 }

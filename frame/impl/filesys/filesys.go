@@ -1,19 +1,19 @@
 package filesys
 
-import(
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/impl/directory"
-	"path/filepath"
-	"github.com/opesun/nocrud/frame/misc/scut"
+import (
 	"fmt"
+	"github.com/opesun/nocrud/frame/impl/directory"
+	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/misc/scut"
+	"path/filepath"
 	"strings"
 )
 
 type FileSys struct {
-	root	string
-	host	string
-	opt 	map[string]interface{}
-	t		iface.Temporaries
+	root string
+	host string
+	opt  map[string]interface{}
+	t    iface.Temporaries
 }
 
 func New(root string, host string, opt map[string]interface{}, t iface.Temporaries) *FileSys {

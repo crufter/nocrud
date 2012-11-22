@@ -1,16 +1,16 @@
 package skeleton
 
-import(
-	"github.com/opesun/jsonp"
-	"github.com/opesun/nocrud/frame/misc/convert"
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/composables/basics"
+import (
 	"fmt"
+	"github.com/opesun/jsonp"
+	"github.com/opesun/nocrud/frame/composables/basics"
+	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/misc/convert"
 )
 
 type C struct {
-			basics.Basics
-	opt		map[string]interface{}
+	basics.Basics
+	opt map[string]interface{}
 }
 
 func (c *C) Init(ctx iface.Context) {

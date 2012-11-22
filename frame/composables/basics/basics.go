@@ -1,19 +1,19 @@
 package basics
 
-import(
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
 )
 
 type Basics struct {
-	Hooks 	iface.Hooks
-	Db		iface.Db
+	Hooks iface.Hooks
+	Db    iface.Db
 }
 
 type QueryInfo struct {
-	Count 	int
-	Skipped	int
-	Limited	int
-	Sorted	[]string
+	Count   int
+	Skipped int
+	Limited int
+	Sorted  []string
 }
 
 func (b *Basics) Get(a iface.Filter) ([]map[string]interface{}, *QueryInfo, error) {

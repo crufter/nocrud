@@ -1,13 +1,13 @@
 package ws_example
 
-import(
+import (
+	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"time"
-	"fmt"
 )
 
-type C struct{
-	d	iface.Display
+type C struct {
+	d iface.Display
 }
 
 type Ctx interface {

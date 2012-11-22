@@ -1,20 +1,20 @@
 package verbinfo_test
 
-import(
-	"testing"
+import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/verbinfo"
 	"github.com/opesun/nocrud/frame/mod"
+	"github.com/opesun/nocrud/frame/verbinfo"
+	"testing"
 )
 
 type mockObject struct{}
 
 func (m *mockObject) MethodA(a iface.Filter, data map[string]interface{}) {
-	
+
 }
 
 func (m *mockObject) MethodB(a, b iface.Filter) {
-	
+
 }
 
 func TestA(t *testing.T) {

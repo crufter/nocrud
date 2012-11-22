@@ -1,13 +1,13 @@
 package lang
 
-import(
-	"strconv"
-	"strings"
+import (
 	"fmt"
-	"regexp"
-	"net/url"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/misc/convert"
+	"net/url"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 func ToCodeStyle(a string) string {
@@ -36,9 +36,9 @@ func ToFileStyle(a string) string {
 }
 
 type Route struct {
-	checked			int
-	Words			[]string
-	Queries			[]map[string]interface{}
+	checked int
+	Words   []string
+	Queries []map[string]interface{}
 }
 
 type URLEncoder struct {
@@ -105,7 +105,7 @@ func (u *URLEncoder) UrlString(action_name string, input_params map[string]inter
 	path, merged := u.Url(action_name, input_params)
 	qu := mapToQueryString(merged)
 	if len(qu) > 0 {
-		path = path+"?"+qu
+		path = path + "?" + qu
 	}
 	return path
 }
@@ -123,9 +123,9 @@ func (u *URLEncoder) Url(action_name string, input_params map[string]interface{}
 }
 
 type Form struct {
-	FilterFields	map[string]interface{}
-	ActionPath		string
-	KeyPrefix		string
+	FilterFields map[string]interface{}
+	ActionPath   string
+	KeyPrefix    string
 }
 
 func keyPrefix(q []map[string]interface{}) int {
@@ -135,7 +135,7 @@ func keyPrefix(q []map[string]interface{}) int {
 			dec++
 		}
 	}
-	return len(q)-dec-1
+	return len(q) - dec - 1
 }
 
 func keyPrefixString(q []map[string]interface{}) string {
@@ -160,7 +160,7 @@ func EncodeQueries(queries []map[string]interface{}, ignore_lone_id bool) map[st
 		}
 		var prefix string
 		if i-dec != 0 {
-			prefix = strconv.Itoa(i-dec)
+			prefix = strconv.Itoa(i - dec)
 		}
 		for j, x := range v {
 			if _, yepp := x.([]interface{}); yepp {
@@ -251,17 +251,17 @@ func NewRoute(path string, q map[string]interface{}) (*Route, error) {
 	if len(ps) < 1 {
 		return r, fmt.Errorf("Wtf.")
 	}
-	ps = ps[1:]		// First one is empty string.
+	ps = ps[1:] // First one is empty string.
 	sorted := sortParams(q)
 	skipped := 0
-	for i:=0;i<len(ps);i++ {
+	for i := 0; i < len(ps); i++ {
 		v := ps[i]
 		r.Words = append(r.Words, v)
 		r.Queries = append(r.Queries, map[string]interface{}{})
-		qi := len(r.Words)-1
-		if len(ps) > i+1 {	// We are not at the end.
+		qi := len(r.Words) - 1
+		if len(ps) > i+1 { // We are not at the end.
 			next := ps[i+1]
-			if nextIsId(v, next) {	// Id query in url., eg /users/fxARrttgFd34xdv7
+			if nextIsId(v, next) { // Id query in url., eg /users/fxARrttgFd34xdv7
 				skipped++
 				cq := r.Queries[qi]
 				val, has := cq["id"]
@@ -291,7 +291,7 @@ func NewRoute(path string, q map[string]interface{}) (*Route, error) {
 	return r, nil
 }
 
-type Sentence struct{
+type Sentence struct {
 	Noun, Verb, Redundant string
 }
 

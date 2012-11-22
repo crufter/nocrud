@@ -1,19 +1,19 @@
 package file
 
-import(
-	"github.com/opesun/jsonp"
-	"github.com/opesun/nocrud/frame/misc/convert"
-	iface "github.com/opesun/nocrud/frame/interfaces"
-	"github.com/opesun/nocrud/frame/composables/basics"
+import (
 	"fmt"
+	"github.com/opesun/jsonp"
+	"github.com/opesun/nocrud/frame/composables/basics"
+	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/misc/convert"
 	"github.com/opesun/sanitize"
 )
 
 type C struct {
-				basics.Basics
-	fileSys		iface.FileSys
-	fileBiz 	map[string][]iface.ReadableFile
-	opt			map[string]interface{}
+	basics.Basics
+	fileSys iface.FileSys
+	fileBiz map[string][]iface.ReadableFile
+	opt     map[string]interface{}
 }
 
 func (c *C) Init(ctx iface.Context) {
