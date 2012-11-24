@@ -14,31 +14,27 @@ func (e *Entries) Init(ctx iface.Context) {
 	e.user = ctx.User()
 }
 
-func toSS(sl []interface{}) []string {
-	ret := []string{}
-	for _, v := range sl {
-		ret = append(ret, v.(string))
-	}
-	return ret
-}
-
-func (c *C) Entries() ([]map[string]interface{}, error) {
-	return nil, nil
-}
-
-func (c *C) GetClosest() (evenday.Interval, error) {
+func (e *Entries) GetClosest() (evenday.Interval, error) {
 	return evenday.Interval{}, nil
 }
 
-func (c *C) SaveEntry(data map[string]interface{}) error {
+func (e *Entries) SaveEntry(data map[string]interface{}) error {
 	return nil
 }
 
-func (c *C) ClientEntries(data map[string]interface{}) error {
+func (e *Entries) ClientEntries(data map[string]interface{}) error {
 	return nil
 }
 
-func (c *C) DeleteEntry(a iface.Filter) error {
+func (e *Entries) DeleteEntry(a iface.Filter) error {
+	return nil
+}
+
+func (e *Entries) Install(o iface.Document, resource string) error {
+	return nil
+}
+
+func (e *Entries) Uninstall(o iface.Document, resource string) error {
 	return nil
 }
 
@@ -50,24 +46,30 @@ func (tt *TimeTable) Init(ctx iface.Context) {
 	tt.user = ctx.User()
 }
 
+func toSS(sl []interface{}) []string {
+	ret := []string{}
+	for _, v := range sl {
+		ret = append(ret, v.(string))
+	}
+	return ret
+}
+
 func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
-	if _, ok := c.user.Data()["professional"]; !ok {
+	if _, ok := tt.user.Data()["professional"]; !ok {
 		return fmt.Errorf("Only professionals can save timetables.")
 	}
-	//ttString, ok := data["timetable"].([]interface{})
-	//if !ok {
-	//	return fmt.Errorf("No timetable to save.")
-	//}
-	//err := validateTimetable(timetable)
-	//if err != nil {
-	//	return err
-	//}
+	ssl :=toSS(data["timetable"].([]interface{}))
+	timeTable, err := evenday.StringsToTimeTable(ssl)
+	if err != nil {
+		return err
+	}
 	count, err := a.Count()
 	if err != nil {
 		return err
 	}
 	m := map[string]interface{}{}
-	m["created_by"] = c.user.Id()
+	m["createdBy"] = tt.user.Id()
+	m["timeTable"] = timeTable
 	if count == 0 {
 		return a.Insert(m)
 	} else if count == 1 {
@@ -78,4 +80,12 @@ func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
 		return doc.Update(m)
 	}
 	return fmt.Errorf("Too many timetables in the database.")
+}
+
+func (tt *TimeTable) Install(o iface.Document, resource string) error {
+	return nil
+}
+
+func (tt *TimeTable) Uninstall(o iface.Document, resource string) error {
+	return nil
 }

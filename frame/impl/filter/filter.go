@@ -147,6 +147,7 @@ func processQuery(hooks iface.Hooks, scheme, inp map[string]interface{}) *data {
 		if err != nil {
 			panic(err)
 		}
+		hooks.Select("SanitizerMangler").Fire(ex)
 		dat, err := ex.Extract(inp)
 		if err != nil {
 			panic(err)
