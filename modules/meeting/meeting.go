@@ -37,7 +37,7 @@ func (e *Entries) ProcessQuery(q map[string]interface{}) {
 func (e *Entries) Install(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$addToSet": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{"entries", "ProcessQuery"},
+			"Hooks." + resource + "ProcessQuery": []interface{}{"entries", "ProcessQuery"},
 		},
 	}
 	return o.Update(upd)
@@ -46,7 +46,7 @@ func (e *Entries) Install(o iface.Document, resource string) error {
 func (e *Entries) Uninstall(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{"entries", "ProcessQuery"},
+			"Hooks." + resource + "ProcessQuery": []interface{}{"entries", "ProcessQuery"},
 		},
 	}
 	return o.Update(upd)
@@ -103,7 +103,7 @@ func (tt *TimeTable) ProcessQuery(q map[string]interface{}) {
 func (tt *TimeTable) Install(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$addToSet": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{"timetable", "ProcessQuery"},
+			"Hooks." + resource + "ProcessQuery": []interface{}{"timetable", "ProcessQuery"},
 		},
 	}
 	return o.Update(upd)
@@ -112,7 +112,7 @@ func (tt *TimeTable) Install(o iface.Document, resource string) error {
 func (tt *TimeTable) Uninstall(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{"timetable", "ProcessQuery"},
+			"Hooks." + resource + "ProcessQuery": []interface{}{"timetable", "ProcessQuery"},
 		},
 	}
 	return o.Update(upd)
