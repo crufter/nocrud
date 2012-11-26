@@ -99,8 +99,7 @@ func (t *Top) route() (err error) {
 	np := ctx.NonPortable()
 	hl, err := highlev.New(ctx.Conducting().Hooks(), np.Resource(), nouns, np.Params())
 	if err != nil {
-		display.New(ctx).Do(nil)
-		return nil
+		return display.New(ctx).Do(nil)
 	}
 	deflev_i, _ := odoc.Get("defaultLevel")
 	deflev, _ := numcon.Int(deflev_i)
