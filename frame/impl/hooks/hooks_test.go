@@ -1,7 +1,7 @@
 package hooks_test
 
 import (
-	"github.com/opesun/nocrud/frame/hooks"
+	"github.com/opesun/nocrud/frame/impl/hooks"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/frame/mod"
 	"testing"
@@ -34,7 +34,7 @@ type ModA struct {
 var a = 0
 var called = 0
 
-func (m *ModA) HookA(s string) {
+func (m *ModA) hooksA(s string) {
 	m.called++
 	called = m.called
 	if s == "testA" {
@@ -60,30 +60,30 @@ func TestMethodDispatch(t *testing.T) {
 	a = 0
 	b = 0
 	called = 0
-	hooks := map[string]interface{}{
-		"HookA": []interface{}{"modA"},
-		"HookB": []interface{}{[]interface{}{"modB", "MethodB"}},
+	hookZ := map[string]interface{}{
+		"hooksA": []interface{}{"modA"},
+		"hooksB": []interface{}{[]interface{}{"modB", "MethodB"}},
 	}
-	ev := Hook.New(nil, hooks, newModule)
+	ev := hooks.New(nil, hookZ, newModule)
 	if a != 0 {
 		t.Fatal(a)
 	}
-	ev.Fire("HookA", "testA")
+	ev.Fire("hooksA", "testA")
 	if a != 1 {
 		t.Fatal(a)
 	}
-	ev.Fire("HookA", "asdadsad")
+	ev.Fire("hooksA", "asdadsad")
 	if a != 1 {
 		t.Fatal(a)
 	}
-	ev.Fire("HookC") // Nothing should happend when we call a not existing Hook.
+	ev.Fire("hooksC") // Nothing should happend when we call a not existing hooks.
 	if a != 1 {
 		t.Fatal(a)
 	}
 	if b != 0 {
 		t.Fatal(b)
 	}
-	ev.Fire("HookB", "testB")
+	ev.Fire("hooksB", "testB")
 	if b != 1 {
 		t.Fatal(b)
 	}
@@ -93,15 +93,15 @@ func TestStatePreserving(t *testing.T) {
 	a = 0
 	b = 0
 	called = 0
-	hooks := map[string]interface{}{
-		"HookA": []interface{}{"modA"},
+	hookZ := map[string]interface{}{
+		"hooksA": []interface{}{"modA"},
 	}
-	ev := Hook.New(nil, hooks, newModule)
+	ev := hooks.New(nil, hookZ, newModule)
 	if called != 0 {
 		t.Fatal(called)
 	}
 	for i := 0; i < 10; i++ {
-		ev.Fire("HookA", "dummy data")
+		ev.Fire("hooksA", "dummy data")
 		if called != i+1 {
 			t.Fatal(called)
 		}

@@ -141,7 +141,7 @@ func processQuery(hooks iface.Hooks, coll string, scheme, inp map[string]interfa
 	d.mods = mods
 	if hooks != nil {
 		hooks.Select("ProcessQuery").Fire(inp) // We should let the subscriber now the subject name maybe.
-		hooks.Select(coll + "ProcessQuery").Fire(inp) // We should let the subscriber now the subject name maybe.
+		hooks.Select(coll + "ProcessQuery").Fire(inp)
 	}
 	if scheme != nil {
 		ex, err = sanitize.New(scheme)

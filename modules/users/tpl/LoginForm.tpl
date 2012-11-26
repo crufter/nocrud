@@ -2,7 +2,7 @@
 
 <h1>{{$.main_noun}} / LoginForm:</h1>
 
-{{if logged_in}}
+{{if loggedIn}}
 	{{$f := form "logout"}}
 	<a href="/{{$f.ActionPath}}">Logout</a>
 {{else}}

@@ -168,7 +168,9 @@ func (e *Hook) instance(modname string) iface.Instance {
 		panic(fmt.Sprintf("Module %v does not exist.", modname))
 	}
 	insta := mo.Instance()
-	e.initer(insta)
+	if e.initer != nil {
+		e.initer(insta)
+	}
 	e.cache[modname] = insta
 	return insta
 }
