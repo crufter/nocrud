@@ -131,7 +131,7 @@ func CanonicalHost(host string, opt map[string]interface{}) string {
 			panic(fmt.Sprintf("Unapproved host alias %v.", host))
 		}
 	}
-	canon_host, has_canon := opt["canonical_host"]
+	canon_host, has_canon := opt["canonicalHost"]
 	if !has_canon {
 		return host
 	}
@@ -148,12 +148,12 @@ func OnlyAdmin(u iface.User) {
 // If the opt doc is empty, it returns a default nouns configoration.
 func GetNouns(odoc iface.NestedData) map[string]interface{} {
 	opt_def := map[string]interface{}{
-		"composed_of": []interface{}{
+		"composedOf": []interface{}{
 			"jsonedit",
 		},
 	}
 	term_def := map[string]interface{}{
-		"composed_of": []interface{}{
+		"composedOf": []interface{}{
 			"terminal",
 		},
 		"verbs": map[string]interface{}{

@@ -30,12 +30,26 @@ func (e *Entries) DeleteEntry(a iface.Filter) error {
 	return nil
 }
 
+func (e *Entries) ProcessQuery(q map[string]interface{}) {
+	q["createdBy"] = e.user.Id()
+}
+
 func (e *Entries) Install(o iface.Document, resource string) error {
-	return nil
+	upd := map[string]interface{}{
+		"$addToSet": map[string]interface{}{
+			"Hooks." + resource + "ProcessQuery": []interface{"entries", "ProcessQuery"},
+		},
+	}
+	return o.Update(upd)
 }
 
 func (e *Entries) Uninstall(o iface.Document, resource string) error {
-	return nil
+	upd := map[string]interface{}{
+		"$pull": map[string]interface{}{
+			"Hooks." + resource + "ProcessQuery": []interface{"entries", "ProcessQuery"},
+		},
+	}
+	return o.Update(upd)
 }
 
 type TimeTable struct {
@@ -58,7 +72,7 @@ func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
 	if _, ok := tt.user.Data()["professional"]; !ok {
 		return fmt.Errorf("Only professionals can save timetables.")
 	}
-	ssl :=toSS(data["timetable"].([]interface{}))
+	ssl := toSS(data["timetable"].([]interface{}))
 	timeTable, err := evenday.StringsToTimeTable(ssl)
 	if err != nil {
 		return err
@@ -82,10 +96,24 @@ func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
 	return fmt.Errorf("Too many timetables in the database.")
 }
 
+func (tt *TimeTable) ProcessQuery(q map[string]interface{}) {
+	q["createdBy"] = tt.user.Id()
+}
+
 func (tt *TimeTable) Install(o iface.Document, resource string) error {
-	return nil
+	upd := map[string]interface{}{
+		"$addToSet": map[string]interface{}{
+			"Hooks." + resource + "ProcessQuery": []interface{"timetable", "ProcessQuery"},
+		},
+	}
+	return o.Update(upd)
 }
 
 func (tt *TimeTable) Uninstall(o iface.Document, resource string) error {
-	return nil
+	upd := map[string]interface{}{
+		"$pull": map[string]interface{}{
+			"Hooks." + resource + "ProcessQuery": []interface{"timetable", "ProcessQuery"},
+		},
+	}
+	return o.Update(upd)
 }

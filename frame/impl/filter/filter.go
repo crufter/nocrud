@@ -48,7 +48,7 @@ func NewSimple(set iface.Set, hooks iface.Hooks, scheme map[string]interface{}) 
 }
 
 func New(set iface.Set, hooks iface.Hooks, scheme, input map[string]interface{}) (*Filter, error) {
-	d := processQuery(hooks, scheme, input)
+	d := processQuery(hooks, set.Name(), scheme, input)
 	f := &Filter{
 		set:  set,
 		mods: d.mods,
@@ -96,7 +96,7 @@ type data struct {
 
 // Special fields in query:
 // parentf, sort, limit, skip, page
-func processQuery(hooks iface.Hooks, scheme, inp map[string]interface{}) *data {
+func processQuery(hooks iface.Hooks, coll string, scheme, inp map[string]interface{}) *data {
 	d := &data{}
 	if inp == nil {
 		inp = map[string]interface{}{}
@@ -141,6 +141,7 @@ func processQuery(hooks iface.Hooks, scheme, inp map[string]interface{}) *data {
 	d.mods = mods
 	if hooks != nil {
 		hooks.Select("ProcessQuery").Fire(inp) // We should let the subscriber now the subject name maybe.
+		hooks.Select(coll + "ProcessQuery").Fire(inp) // We should let the subscriber now the subject name maybe.
 	}
 	if scheme != nil {
 		ex, err = sanitize.New(scheme)
@@ -214,7 +215,7 @@ func (f *Filter) Modifiers() iface.Modifiers {
 }
 
 func (f *Filter) AddQuery(q map[string]interface{}) iface.Filter {
-	query := processQuery(f.hooks, f.scheme, q).query
+	query := processQuery(f.hooks, f.set.Name(), f.scheme, q).query
 	for i, v := range f.query {
 		query[i] = v
 	}

@@ -203,8 +203,8 @@ After you exported your module, you can assign your module to resources (nouns) 
 ```js
 {
 	"nouns": {
-		"my_noun": {
-			"composed_of": [
+		"myNoun": {
+			"composedOf": [
 				"mymodule"
 			]
 		}

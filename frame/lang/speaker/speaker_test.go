@@ -18,7 +18,7 @@ func moduleHasVerb(n, v string) bool {
 func Test0(t *testing.T) {
 	mockNounOpt := map[string]interface{}{
 		"cars": map[string]interface{}{
-			"composed_of": []interface{}{"testModuleA"},
+			"composedOf": []interface{}{"testModuleA"},
 		},
 	}
 	spkr := speaker.New(moduleHasVerb, mockNounOpt)
@@ -33,7 +33,7 @@ func Test0(t *testing.T) {
 func Test1(t *testing.T) {
 	mockNounOpt := map[string]interface{}{
 		"cars": map[string]interface{}{
-			"composed_of": []interface{}{"testModuleA"},
+			"composedOf": []interface{}{"testModuleA"},
 		},
 	}
 	spkr := speaker.New(moduleHasVerb, mockNounOpt)
@@ -48,7 +48,7 @@ func Test1(t *testing.T) {
 func TestVerbLocation(t *testing.T) {
 	mockNounOpt := map[string]interface{}{
 		"cars": map[string]interface{}{
-			"composed_of": []interface{}{"testModuleA"},
+			"composedOf": []interface{}{"testModuleA"},
 		},
 	}
 	spkr := speaker.New(moduleHasVerb, mockNounOpt)

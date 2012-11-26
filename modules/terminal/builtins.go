@@ -29,7 +29,7 @@ func (c *C) install(resource, module string, ignore bool) error {
 	if !ignore {
 		upd := map[string]interface{}{
 			"$addToSet": map[string]interface{}{
-				fmt.Sprintf("nouns.%v.composed_of", resource): module,
+				fmt.Sprintf("nouns.%v.composedOf", resource): module,
 			},
 		}
 		err = odoc.Update(upd)
@@ -63,7 +63,7 @@ func (c *C) uninstall(resource, module string) error {
 	}
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
-			fmt.Sprintf("nouns.%v.composed_of", resource): module,
+			fmt.Sprintf("nouns.%v.composedOf", resource): module,
 		},
 	}
 	err = odoc.Update(upd)
@@ -86,7 +86,7 @@ type verb struct {
 }
 
 func (c *C) verbs(resource string) ([]verb, error) {
-	comp, ok := c.ctx.Options().Document().GetS(fmt.Sprintf("nouns.%v.composed_of", resource))
+	comp, ok := c.ctx.Options().Document().GetS(fmt.Sprintf("nouns.%v.composedOf", resource))
 	if !ok {
 		return nil, fmt.Errorf("Can't find resource %v.", resource)
 	}

@@ -24,7 +24,7 @@ func (t *Speaker) verbLocation(noun, verb string) string {
 	if !has {
 		return ""
 	}
-	for _, v := range val["composed_of"].([]interface{}) {
+	for _, v := range val["composedOf"].([]interface{}) {
 		if t.Has(v.(string), verb) {
 			return v.(string)
 		}
