@@ -305,7 +305,7 @@ func (h *hook) Fire(args ...interface{}) (string, error) {
 		h.hook.Fire(inp...)
 	}
 	return New(h.ctx).ToString([]string{
-		modName + "/" + string.Title(h.hookName),
+		modName + "/" + strings.Title(h.hookName),
 	})
 }
 
