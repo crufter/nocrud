@@ -1,6 +1,7 @@
 package nonportable
 
 import (
+	iface "github.com/opesun/nocrud/frame/interfaces"
 	"net/http"
 )
 
@@ -42,4 +43,14 @@ func (n *NonPortable) View() bool {
 
 func (n *NonPortable) RawParams() string {
 	return n.req.URL.RawQuery
+}
+
+func (n *NonPortable) ServeFile(f iface.File) error {
+	http.ServeFile(n.w, n.req, f.Path())
+	return nil
+}
+
+func (n *NonPortable) ServeDir(d iface.Directory) error {
+	http.ServeFile(n.w, n.req, d.Path())
+	return nil
 }

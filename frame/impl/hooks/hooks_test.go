@@ -34,7 +34,7 @@ type ModA struct {
 var a = 0
 var called = 0
 
-func (m *ModA) hooksA(s string) {
+func (m *ModA) HooksA(s string) {
 	m.called++
 	called = m.called
 	if s == "testA" {
@@ -64,26 +64,26 @@ func TestMethodDispatch(t *testing.T) {
 		"hooksA": []interface{}{"modA"},
 		"hooksB": []interface{}{[]interface{}{"modB", "MethodB"}},
 	}
-	ev := hooks.New(nil, hookZ, newModule)
+	hs := hooks.New(hookZ, newModule)
 	if a != 0 {
 		t.Fatal(a)
 	}
-	ev.Fire("hooksA", "testA")
+	hs.Select("hooksA").Fire("testA")
 	if a != 1 {
 		t.Fatal(a)
 	}
-	ev.Fire("hooksA", "asdadsad")
+	hs.Select("hooksA").Fire("asdadsad")
 	if a != 1 {
 		t.Fatal(a)
 	}
-	ev.Fire("hooksC") // Nothing should happend when we call a not existing hooks.
+	hs.Select("hooksC").Fire()
 	if a != 1 {
 		t.Fatal(a)
 	}
 	if b != 0 {
 		t.Fatal(b)
 	}
-	ev.Fire("hooksB", "testB")
+	hs.Select("hooksB").Fire("testB")
 	if b != 1 {
 		t.Fatal(b)
 	}
@@ -96,12 +96,12 @@ func TestStatePreserving(t *testing.T) {
 	hookZ := map[string]interface{}{
 		"hooksA": []interface{}{"modA"},
 	}
-	ev := hooks.New(nil, hookZ, newModule)
+	hs := hooks.New(hookZ, newModule)
 	if called != 0 {
 		t.Fatal(called)
 	}
 	for i := 0; i < 10; i++ {
-		ev.Fire("hooksA", "dummy data")
+		hs.Select("hooksA").Fire("dummy data")
 		if called != i+1 {
 			t.Fatal(called)
 		}

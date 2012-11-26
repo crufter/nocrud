@@ -247,6 +247,8 @@ type Directory interface {
 	List() ([]FileInfo, error)
 	Create() error
 	Rename(string) error
+	Name() string
+	Path() string
 }
 
 // We will have to adjust this to allow handling large files.
@@ -258,6 +260,7 @@ type File interface {
 	Remove() error
 	Rename(string) error
 	Name() string
+	Path() string	// This is mostly here to be compatible with http.ServeFile
 }
 
 // Readable file provides a subset of the functionality provided by the interace File: it can be read only.
@@ -291,6 +294,8 @@ type NonPortable interface {
 	ComingFrom() string
 	View() bool
 	RawParams() string
+	ServeFile(File) error
+	ServeDir(Directory) error
 }
 
 type Writer interface {

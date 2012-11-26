@@ -102,3 +102,11 @@ func (d *Directory) Directory(s ...string) iface.Directory {
 func (d *Directory) File(s string) iface.File {
 	return file.New(filepath.Join(d.path, s))
 }
+
+func (d *Directory) Name() string {
+	return filepath.Base(d.path)
+}
+
+func (d *Directory) Path() string {
+	return d.path
+}

@@ -61,3 +61,7 @@ func (f *File) Rename(newName string) error {
 func (f *File) Name() string {
 	return filepath.Base(f.path)
 }
+
+func (f *File) Path() string {
+	return f.path
+}
