@@ -81,7 +81,7 @@ func (t *Top) routeWS() (err error) {
 	if err != nil {
 		return err
 	}
-	deflev_i, _ := odoc.Get("default_level")
+	deflev_i, _ := odoc.Get("defaultLevel")
 	deflev, _ := numcon.Int(deflev_i)
 	_, err = hl.Run(ctx.Db(), ctx.User(), deflev)
 	return err
@@ -102,7 +102,7 @@ func (t *Top) route() (err error) {
 		display.New(ctx).Do(nil)
 		return nil
 	}
-	deflev_i, _ := odoc.Get("default_level")
+	deflev_i, _ := odoc.Get("defaultLevel")
 	deflev, _ := numcon.Int(deflev_i)
 	ret, err := hl.Run(ctx.Db(), ctx.User(), deflev)
 	if err != nil {

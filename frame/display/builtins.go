@@ -200,7 +200,7 @@ func getSub(ctx iface.Context, noun string, params ...interface{}) []interface{}
 	if err != nil {
 		panic(err)
 	}
-	deflev_i, _ := ctx.Options().Document().Get("default_level")
+	deflev_i, _ := ctx.Options().Document().Get("defaultLevel")
 	deflev, _ := numcon.Int(deflev_i)
 	ret, err := subhl.Run(ctx.Db(), ctx.User(), deflev)
 	if err != nil {
@@ -219,7 +219,7 @@ func getList(ctx iface.Context, noun string, params ...interface{}) []interface{
 	if err != nil {
 		panic(err)
 	}
-	deflev_i, _ := ctx.Options().Document().Get("default_level")
+	deflev_i, _ := ctx.Options().Document().Get("defaultLevel")
 	deflev, _ := numcon.Int(deflev_i)
 	ret, err := hl.Run(ctx.Db(), ctx.User(), deflev)
 	if err != nil {
