@@ -27,19 +27,12 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"path/filepath"
-	"strings"
 )
 
 func New(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w http.ResponseWriter, req *http.Request, config *config.Config) (iface.Context, error) {
 	opts, _, err := queryOptions(dbConn, false)
 	if err != nil {
 		return nil, err
-	}
-	paths := strings.Split(req.URL.Path, "/")
-	if strings.Index(paths[len(paths)-1], ".") != -1 {
-		serveFile(opts, w, req, config.AbsPath, scut.CanonicalHost(req.Host, opts), req.URL.Path)
-		return nil, nil
 	}
 	cli := client.New(w, req, req.Header, config.Secret)
 	hookz, has := opts["Hooks"].(map[string]interface{})
@@ -137,42 +130,4 @@ func modifiers(a url.Values) map[string]interface{} {
 		}
 	}
 	return mods
-}
-
-// File serving is migrated here temporarily.
-
-// Since we don't include the template name into the url, only "template", we have to extract the template name from the opt here.
-// Example: xyz.com/template/style.css
-//			xyz.com/tpl/admin/style.css
-func serveFile(opt map[string]interface{}, w http.ResponseWriter, req *http.Request, absPath, host string, path string) {
-	paths := strings.Split(path, "/")
-	first_p := paths[1]
-	last_p := paths[len(paths)-1]
-	has_sfx := strings.HasSuffix(last_p, ".go")
-	if first_p == "template" || first_p == "tpl" && !has_sfx {
-		serveTemplateFile(opt, w, req, absPath, host, path)
-	} else if first_p == "uploads" {
-		serveUploadedFile(opt, w, req, absPath, host, path)
-	} else if !has_sfx {
-		if paths[1] == "shared" {
-			http.ServeFile(w, req, filepath.Join(absPath, path))
-		} else {
-			http.ServeFile(w, req, filepath.Join(absPath, "uploads", host, path))
-		}
-	}
-}
-
-func serveTemplateFile(opt map[string]interface{}, w http.ResponseWriter, req *http.Request, absPath, host string, path string) {
-	paths := strings.Split(path, "/")
-	if paths[1] == "template" {
-		p := scut.GetTPath(opt, host)
-		http.ServeFile(w, req, filepath.Join(absPath, p, strings.Join(paths[2:], "/")))
-	} else { // "tpl"
-		http.ServeFile(w, req, filepath.Join(absPath, "modules", paths[2], "tpl", strings.Join(paths[3:], "/")))
-	}
-}
-
-func serveUploadedFile(opt map[string]interface{}, w http.ResponseWriter, req *http.Request, absPath, host string, path string) {
-	paths := strings.Split(path, "/")
-	http.ServeFile(w, req, filepath.Join(absPath, "uploads", scut.Dirify(host), strings.Join(paths[2:], "/")))
 }

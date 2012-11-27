@@ -38,6 +38,8 @@ func (f *FileSys) SelectPlace(s string) (iface.Directory, error) {
 		path = "modules"
 	case "uploads":
 		path = filepath.Join("uploads", dirNameize(f.host))
+	case "root":
+		path = ""
 	default:
 		return nil, fmt.Errorf("Can't find.")
 	}

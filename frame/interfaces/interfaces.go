@@ -240,7 +240,7 @@ type FileInfo interface {
 // A directory will never allow you to access a directory or file residing in any of its parent directory.
 // For accessing directories see the SelectPlace method of interface FileSys.
 type Directory interface {
-	File(string) File
+	File(...string) File
 	Directory(...string) Directory
 	Remove() error
 	Exists() (bool, error)

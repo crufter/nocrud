@@ -10,12 +10,19 @@ import (
 	"github.com/opesun/numcon"
 	"runtime/debug"
 	"strconv"
+	"strings"
 )
 
 type m map[string]interface{}
 
 type Top struct {
 	ctx iface.Context
+}
+
+func New(ctx iface.Context) *Top {
+	return &Top{
+		ctx,
+	}
 }
 
 func burnResults(vctx iface.ViewContext, key string, b []interface{}) {
@@ -64,6 +71,7 @@ func (t *Top) RouteWS() error {
 	return nil
 }
 
+// Files can not be accessed here.
 func (t *Top) routeWS() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -87,6 +95,12 @@ func (t *Top) routeWS() (err error) {
 	return err
 }
 
+// Returns true if the path s identifies a file.
+func isFile(s string) bool {
+	sl := strings.Split(s, "/")
+	return strings.Index(sl[len(sl)-1], ".") != -1
+}
+
 func (t *Top) route() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -94,6 +108,9 @@ func (t *Top) route() (err error) {
 		}
 	}()
 	ctx := t.ctx
+	if isFile(ctx.NonPortable().Resource()) {
+		return t.serveFile()
+	}
 	odoc := ctx.Options().Document()
 	nouns := scut.GetNouns(odoc)
 	np := ctx.NonPortable()
@@ -120,8 +137,61 @@ func (t *Top) route() (err error) {
 	return nil
 }
 
-func New(ctx iface.Context) *Top {
-	return &Top{
-		ctx,
+// Since we don't include the template name into the url, only "template", we have to extract the template name from the opt here.
+// Example: xyz.com/template/style.css
+//			xyz.com/tpl/admin/style.css
+func (t *Top) serveFile() error {
+	path := t.ctx.NonPortable().Resource()
+	parts := strings.Split(path, "/")
+	firstPart := parts[1]	// Intentionally ignoring the 0th one here.
+	lastPart := parts[len(parts)-1]
+	isGoFile := strings.HasSuffix(lastPart, ".go")
+	if isGoFile {
+		return fmt.Errorf("Can't serve source.")
 	}
+	if firstPart == "template" || firstPart == "tpl" {
+		return t.serveTemplateFile()
+	} else if firstPart == "uploads" {
+		return t.serveUploadedFile()
+	}
+	rootPlace, err := t.ctx.FileSys().SelectPlace("root")
+	if err != nil {
+		return err
+	}
+	fileToServe := rootPlace.File(path)
+	return t.ctx.NonPortable().ServeFile(fileToServe)
 }
+
+func (t *Top) serveTemplateFile() error {
+	path := t.ctx.NonPortable().Resource()
+	parts := strings.Split(path, "/")
+	if parts[1] == "template" {
+		templatePlace, err := t.ctx.FileSys().SelectPlace("template")
+		if err != nil {
+			return err
+		}
+		fileToServe := templatePlace.File(parts[2:]...)
+		return t.ctx.NonPortable().ServeFile(fileToServe)
+	}
+	// "tpl"
+	modulesPlace, err := t.ctx.FileSys().SelectPlace("modules")
+	if err != nil {
+		return err
+	}
+	a := []string{parts[2], "tpl"}
+	a = append(a, parts[3:]...)
+	fileToServe := modulesPlace.File(a...)
+	return t.ctx.NonPortable().ServeFile(fileToServe)
+}
+
+func (t *Top) serveUploadedFile() error {
+	path := t.ctx.NonPortable().Resource()
+	parts := strings.Split(path, "/")
+	uploadsPlace, err := t.ctx.FileSys().SelectPlace("uploads")
+	if err != nil {
+		return err
+	}
+	fileToServe := uploadsPlace.File(parts[2:]...)
+	return t.ctx.NonPortable().ServeFile(fileToServe)
+}
+

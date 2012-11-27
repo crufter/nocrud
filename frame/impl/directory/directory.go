@@ -99,8 +99,10 @@ func (d *Directory) Directory(s ...string) iface.Directory {
 	return New(filepath.Join(arg...))
 }
 
-func (d *Directory) File(s string) iface.File {
-	return file.New(filepath.Join(d.path, s))
+func (d *Directory) File(s ...string) iface.File {
+	arg := []string{d.path}
+	arg = append(arg, s...)
+	return file.New(filepath.Join(arg...))
 }
 
 func (d *Directory) Name() string {

@@ -66,21 +66,21 @@ func (c *C) moveFiles(subject, id string) error {
 	return nil
 }
 
-// Converts all absolute paths to filenames so we can save them in the document.
-func fileNames(files map[string][]iface.ReadableFile) map[string]interface{} {
-	ret := map[string]interface{}{}
+// Collects the filenames so we can save them in the document.
+func fileNames(files map[string][]iface.ReadableFile) map[string][]string {
+	ret := map[string][]string{}
 	for folder, files := range files {
 		if _, has := ret[folder]; !has {
-			ret[folder] = []interface{}{}
+			ret[folder] = []string{}
 		}
 		for _, file := range files {
-			ret[folder] = append(ret[folder].([]interface{}), file.Name())
+			ret[folder] = append(ret[folder], file.Name())
 		}
 	}
 	return ret
 }
 
-func merge(a, b map[string]interface{}) map[string]interface{} {
+func merge(a map[string]interface{}, b map[string][]string) map[string]interface{} {
 	for i, v := range b {
 		a[i] = v
 	}
@@ -105,10 +105,11 @@ func (c *C) Insert(a iface.Filter, data map[string]interface{}) (iface.Id, error
 	return id, nil
 }
 
-func eachIfNeeded(filenames map[string]interface{}) map[string]interface{} {
+// We build the modifier query here, using "$each" where we have multiple files.
+// The return value of this can be used with the "$addToSet" modifier.
+func createQuery(filenames map[string][]string) map[string]interface{} {
 	ret := map[string]interface{}{}
-	for folder, sl := range filenames {
-		slice := sl.([]interface{})
+	for folder, slice := range filenames {
 		l := len(slice)
 		if l == 0 {
 			panic("I shouldn't receive empty file slices.")
@@ -141,7 +142,7 @@ func (c *C) Update(a iface.Filter, data map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		upd["$addToSet"] = eachIfNeeded(fileNames(c.fileBiz))
+		upd["$addToSet"] = createQuery(fileNames(c.fileBiz))
 	}
 	err := a.Update(upd)
 	if err != nil {
