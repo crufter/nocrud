@@ -151,6 +151,7 @@ func ToId(encodedForm string) iface.Id {
 	}
 }
 
+// This can be problematic, easily triggers false positives.
 func IsId(encodedForm string) bool {
 	if len(encodedForm) == 16 {
 		return true

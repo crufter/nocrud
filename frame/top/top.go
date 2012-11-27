@@ -40,6 +40,9 @@ func (t *Top) Get(ret []interface{}, files []string) error {
 	if ran.HadError() {
 		return display.New(t.ctx).Error(ran.Error())
 	}
+	if ran.ReturnedFile() {
+		return t.ctx.NonPortable().ServeFile(ran.File())
+	}
 	burnResults(t.ctx.ViewContext(), "main", ran.NonErrors())
 	return display.New(t.ctx).Do(files)
 }

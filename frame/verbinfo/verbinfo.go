@@ -94,3 +94,19 @@ func (r *Ranalyzer) NonErrors() []interface{} {
 	}
 	return ret
 }
+
+// Returns true if the verb returned a file (and optionally an error)
+func (r *Ranalyzer) ReturnedFile() bool {
+	if len(r.a) == 0 {
+		return false
+	}
+	_, isFile := r.a[0].(iface.File)
+	return isFile
+}
+
+func (r *Ranalyzer) File() iface.File {
+	if !r.ReturnedFile() {
+		panic("No file here, boy.")
+	}
+	return r.a[0].(iface.File)
+}
