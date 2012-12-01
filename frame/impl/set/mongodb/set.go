@@ -139,6 +139,9 @@ func (id *Id) String() string {
 	return base64.URLEncoding.EncodeToString([]byte(id.i))
 }
 
+func (id *Id) IAmAnId() {
+}
+
 func NewId() iface.Id {
 	return &Id{
 		bson.NewObjectId(),
@@ -162,7 +165,7 @@ func IsId(encodedForm string) bool {
 func decodeId(s string) (bson.ObjectId, error) {
 	val, err := base64.URLEncoding.DecodeString(s)
 	if err != nil {
-		panic("Can't decode id: " + err.Error())
+		panic("Can't decode id: " + s + " " + err.Error())
 	}
 	return bson.ObjectId(val), nil
 }

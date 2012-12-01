@@ -33,6 +33,25 @@ func New(cond iface.Conducting,
 	}
 }
 
+type ContextInput struct {
+	Conducting  iface.Conducting
+	FileSys     iface.FileSys
+	User        iface.User
+	Client      iface.Client
+	Db          iface.Db
+	Channels    iface.Channels
+	ViewContext iface.ViewContext
+	NonPortable iface.NonPortable
+	Display     iface.Display
+	Options     iface.Options
+}
+
+func NewFromInput(i ContextInput) iface.Context {
+	return &Context{
+		i.Conducting, i.FileSys, i.User, i.Client, i.Db, i.Channels, i.ViewContext, i.NonPortable, i.Display, i.Options,
+	}
+}
+
 func (c *Context) Conducting() iface.Conducting {
 	return c.conducting
 }

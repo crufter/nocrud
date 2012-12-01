@@ -12,15 +12,15 @@ type User struct {
 	languages []string
 }
 
-func New(db iface.Db, hooks iface.Hooks, client iface.Client) *User {
-	user, err := _new(db, hooks, client)
+func New(db iface.Db, client iface.Client) *User {
+	user, err := _new(db, client)
 	if err != nil {
 		return emptyUser(client)
 	}
 	return user
 }
 
-func _new(db iface.Db, hooks iface.Hooks, client iface.Client) (*User, error) {
+func _new(db iface.Db, client iface.Client) (*User, error) {
 	uidI, err := client.GetDecrypted("user")
 	if err != nil {
 		return nil, err

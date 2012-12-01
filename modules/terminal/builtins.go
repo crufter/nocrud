@@ -80,25 +80,35 @@ func (c *C) uninstall(resource, module string) error {
 	return err
 }
 
-type verb struct {
+type Verb struct {
 	Verb   string
 	Module string
 }
 
-func (c *C) verbs(resource string) ([]verb, error) {
+func (c *C) verbs(resource string) ([]Verb, error) {
 	comp, ok := c.ctx.Options().Document().GetS(fmt.Sprintf("nouns.%v.composedOf", resource))
 	if !ok {
 		return nil, fmt.Errorf("Can't find resource %v.", resource)
 	}
-	verbs := map[string]struct{}{}
+	verbs := map[string]Verb{}
 	for _, v := range comp {
 		modu := c.ctx.Conducting().Hooks().Module(v.(string))
 		mtods := modu.Instance().MethodNames()
-		fmt.Println(mtods)
-		verbs[""] = struct{}{}
+		for _, v1 := range mtods {
+			if _, exists := verbs[v1]; exists {
+				continue
+			}
+			verbs[v1] = Verb{
+				v1,
+				v.(string),
+			}
+		}
 	}
-	ret := []verb{}
-	return ret, fmt.Errorf("Not implemented yet.")
+	ret := []Verb{}
+	for _, v := range verbs {
+		ret = append(ret, v)
+	}
+	return ret, nil
 }
 
 func (c *C) composed(resource string) []string {
@@ -223,6 +233,9 @@ func (c *C) builtins() map[string]interface{} {
 		"saveOpt":  saveOpt,
 		"revert":   revert,
 		"findComm": findCommand,
+		"verbs": func(s string) ([]Verb, error) {
+			return c.verbs(s)
+		},
 		"composed": func(r string) []string {
 			return c.composed(r)
 		},

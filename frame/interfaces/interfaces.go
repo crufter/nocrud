@@ -144,7 +144,9 @@ type Filter interface {
 }
 
 // Id represents a document Id.
+// IAmAnId is there because too many things implement the interface { String() string }
 type Id interface {
+	IAmAnId()
 	String() string
 }
 

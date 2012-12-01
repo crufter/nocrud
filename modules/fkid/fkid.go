@@ -17,7 +17,7 @@ func (c *C) Init(ctx iface.Context) {
 func (c *C) SanitizerMangler(san *sanitize.Extractor) {
 	san.AddFuncs(sanitize.FuncMap{
 		"fkid": func(dat interface{}, s sanitize.Scheme) (interface{}, error) {
-			cs, _ := s.Specific["comma_separated"].(bool)
+			cs, _ := s.Specific["commaSeparated"].(bool)
 			if cs {
 				ret := []interface{}{}
 				split := strings.Split(dat.(string), ",")

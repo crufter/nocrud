@@ -29,6 +29,15 @@ import (
 	"net/url"
 )
 
+func moduleIniter(ctx iface.Context) func(iface.Instance) error {
+	return func(inst iface.Instance) error {
+		if inst.HasMethod("Init") {
+			inst.Method("Init").Call(nil, ctx)
+		}
+		return nil
+	}
+}
+
 func New(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w http.ResponseWriter, req *http.Request, config *config.Config) (iface.Context, error) {
 	opts, _, err := queryOptions(dbConn, false)
 	if err != nil {
@@ -41,7 +50,7 @@ func New(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w http
 	}
 	hoo := hooks.New(hookz, mod.NewModule)
 	datab := db.New(session, dbConn, opts, hoo)
-	usr := user.New(datab, hoo, cli)
+	usr := user.New(datab, cli)
 	err = req.ParseMultipartForm(1000000)
 	if err != nil {
 		return nil, err
@@ -61,13 +70,7 @@ func New(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w http
 	ev := events.New(conn)
 	cond := conducting.New(hoo, ev)
 	ctx := context.New(cond, fs, usr, cli, datab, ch, vctx, np, dsp, o)
-	initer := func(inst iface.Instance) error {
-		if inst.HasMethod("Init") {
-			inst.Method("Init").Call(nil, ctx)
-		}
-		return nil
-	}
-	hoo.Initer(initer)
+	hoo.Initer(moduleIniter(ctx))
 	return ctx, err
 }
 
@@ -83,7 +86,7 @@ func NewWS(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w ht
 	}
 	hoo := hooks.New(hookz, mod.NewModule)
 	datab := db.New(session, dbConn, opts, hoo)
-	usr := user.New(datab, hoo, cli)
+	usr := user.New(datab, cli)
 	err = req.ParseMultipartForm(1000000)
 	if err != nil {
 		return nil, err
@@ -103,13 +106,7 @@ func NewWS(conn *gt.Connection, session *mgo.Session, dbConn *mgo.Database, w ht
 	ev := events.New(conn)
 	cond := conducting.New(hoo, ev)
 	ctx := context.New(cond, fs, usr, cli, datab, ch, vctx, np, dsp, o)
-	initer := func(inst iface.Instance) error {
-		if inst.HasMethod("Init") {
-			inst.Method("Init").Call(nil, ctx)
-		}
-		return nil
-	}
-	hoo.Initer(initer)
+	hoo.Initer(moduleIniter(ctx))
 	return ctx, err
 }
 

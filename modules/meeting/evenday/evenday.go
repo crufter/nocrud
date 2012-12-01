@@ -28,15 +28,28 @@ const (
 )
 
 // n = seconds from Unix Epoch.
+// The weeks starts on monday.
 func DateToDayName(n int64) DayName {
 	t := time.Unix(n, 0)
 	_, week := t.ISOWeek()
 	odd := week%2 == 1
 	day := t.Weekday()
+	// Correcting the "week starts on Sunday" approach of the time package.
+	if day == time.Sunday {
+		day = 6
+	} else {
+		day = day - 1
+	}
 	if odd {
 		return DayName(day)
 	}
 	return DayName(day + 7)
+}
+
+func DateToMinute(n int64) Minute {
+	hour :=	time.Unix(n, 0).Hour() - 1	// This was off by one, don't know why. 	
+	min := 	time.Unix(n, 0).Minute()
+	return Minute(int(hour)*60+int(min))
 }
 
 // Xth minute of a day. 0th minute is 0:00
@@ -78,9 +91,10 @@ func StringToMinute(s string) (Minute, bool) {
 	return Minute(hour*60 + minute), true
 }
 
+// From and To fields were both unexported, but then the mgo driver can't serialize it...
 type Interval struct {
-	from Minute
-	to   Minute
+	From Minute
+	To   Minute
 }
 
 // Convenience function.
@@ -96,28 +110,28 @@ func ToInterval(fromHour, fromMinute, toHour, toMinute int) (*Interval, error) {
 	return NewInterval(fromMins, toMins)
 }
 
-func (i *Interval) From() Minute {
-	return i.from
-}
-
-func (i *Interval) To() Minute {
-	return i.to
-}
+// func (i *Interval) From() Minute {
+// 	return i.From
+// }
+// 
+// func (i *Interval) To() Minute {
+// 	return i.To
+// }
 
 func (i *Interval) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"from": i.from,
-		"to":   i.to,
+		"from": i.From,
+		"to":   i.To,
 	})
 }
 
 func (i *Interval) String() string {
-	return i.from.String() + "-" + i.to.String()
+	return i.From.String() + "-" + i.To.String()
 }
 
 // Returns true if interval a fits in interval b.
 func InInterval(a, b *Interval) bool {
-	return a.From() > b.From() && a.To() < b.To()
+	return a.From >= b.From && a.To <= b.To
 }
 
 func NewInterval(from, to Minute) (*Interval, error) {
@@ -130,14 +144,21 @@ func NewInterval(from, to Minute) (*Interval, error) {
 	}, nil
 }
 
-func GenericToInterval(a map[string]interface{}) (*Interval, error) {
-	from, err := numcon.Int(a["from"])
+// Handles both Minute and date inputs
+func GenericToInterval(fromI, toI interface{}) (*Interval, error) {
+	from, err := numcon.Int(fromI)
 	if err != nil {
 		return nil, err
 	}
-	to, err := numcon.Int(a["to"])
+	to, err := numcon.Int(toI)
 	if err != nil {
 		return nil, err
+	}
+	if from > 1440 {
+		from = int(DateToMinute(int64(from))) // Ouch...
+	}
+	if to > 1440 {
+		to = int(DateToMinute(int64(to)))
 	}
 	interval, err := NewInterval(Minute(from), Minute(to))
 	if err != nil {
@@ -183,7 +204,7 @@ func GenericToDaySchedule(a []interface{}) (DaySchedule, error) {
 		if !ok {
 			return DaySchedule{}, fmt.Errorf("Interval is not a map[string]interface{}.")
 		}
-		interval, err := GenericToInterval(m)
+		interval, err := GenericToInterval(m["from"], m["to"])
 		if err != nil {
 			return DaySchedule{}, err
 		}

@@ -1,9 +1,10 @@
 package evenday_test
 
 import (
-	"github.com/opesun/nocrud/modules/pretime/evenday"
+	"github.com/opesun/nocrud/modules/meeting/evenday"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestStringToMinute(t *testing.T) {
@@ -57,22 +58,22 @@ func TestStringToDaySchedule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ds[0].From() != toMinute(8, 0) {
+	if ds[0].From != toMinute(8, 0) {
 		t.Fatal(ds[0])
 	}
-	if ds[0].To() != toMinute(12, 0) {
+	if ds[0].To != toMinute(12, 0) {
 		t.Fatal(ds[0])
 	}
-	if ds[1].From() != toMinute(13, 30) {
+	if ds[1].From != toMinute(13, 30) {
 		t.Fatal(ds[1])
 	}
-	if ds[1].To() != toMinute(17, 40) {
+	if ds[1].To != toMinute(17, 40) {
 		t.Fatal(ds[1])
 	}
-	if ds[2].From() != toMinute(19, 5) {
+	if ds[2].From != toMinute(19, 5) {
 		t.Fatal(ds[2])
 	}
-	if ds[2].To() != toMinute(21, 15) {
+	if ds[2].To != toMinute(21, 15) {
 		t.Fatal(ds[2])
 	}
 }
@@ -82,7 +83,7 @@ func TestInInterval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := evenday.ToInterval(8, 30, 8, 50)
+	b, err := evenday.ToInterval(8, 20, 9, 30)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +104,7 @@ func TestInSchedule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	interval, err := evenday.ToInterval(9, 30, 10, 20)
+	interval, err := evenday.ToInterval(9, 20, 11, 15)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -162,5 +163,27 @@ func TestGenericToTimeTable(t *testing.T) {
 	}
 	if evenday.InTimeTable(evenday.OddMon, toInterval(7, 30, 9, 30), tt) {
 		t.Fatal()
+	}
+}
+
+func TestDayToDayName(t *testing.T) {
+	d, err := time.Parse("2006-01-02 15:04", "2012-11-30 10:52")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dayName := evenday.DateToDayName(d.Unix())
+	if dayName != 11 {
+		t.Fatal(dayName)
+	}
+}
+
+func TestDateToMinute(t *testing.T) {
+	d, err := time.Parse("2006-01-02 15:04", "2012-11-30 10:52")
+	if err != nil {
+		t.Fatal(err)
+	}
+	minute := evenday.DateToMinute(d.Unix())
+	if minute != 10*60+52 {
+		t.Fatal(minute)
 	}
 }
