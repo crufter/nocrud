@@ -4,7 +4,6 @@ import (
 	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/modules/meeting/evenday"
-	"github.com/opesun/numcon"
 )
 
 func isProfessional(u iface.User) bool {
@@ -53,24 +52,51 @@ func (e *Entries) getOptions(resource string) {
 // Returns the closest interval on the same day to the given interval.
 func (e *Entries) GetClosest(a iface.Filter, data map[string]interface{}) (evenday.Interval, error) {
 	e.getOptions(a.Subject())
+	//prof, err := e.db.ToId(data["professional"].(string))
+	//if err != nil {
+	//	return evenday.Interval{}, err
+	//}
+	//from := data["from"].(int64)
+	//length := data["length"].(int64)
+	//err := e.intervalIsValid(data, length)
+	//if err != nil {
+	//	return err
+	//}
+	//to := from + length * 60
+	//day := evenday.DateToDayname
 	return evenday.Interval{}, nil
 }
 
-func dayName(fromI interface{}) (evenday.DayName, error) {
-	from, err := numcon.Int64(fromI)
+func (e *Entries) getTimeTable(prof iface.Id) (*evenday.TimeTable, error) {
+	ttFilter, err := e.db.NewFilter(e.timeTableColl, nil)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	fromDay := evenday.DateToDayName(from)
-	return fromDay, nil
+	timeTableQ := map[string]interface{}{
+		"createdBy": prof,
+	}
+	ttFilter.AddQuery(timeTableQ)
+	ttC, err := ttFilter.Count()
+	if err != nil {
+		return nil, err
+	}
+	if ttC != 1 {
+		return nil, fmt.Errorf("There are multiple timetables.")
+	}
+	timeTables, err := ttFilter.Find()
+	if err != nil {
+		return nil, err
+	}
+	timeTable, err := evenday.GenericToTimeTable(timeTables[0]["timeTable"].([]interface{}))
+	if err != nil {
+		return nil, err
+	}
+	return timeTable, nil
 }
 
 // Checks if the timeTable is ok and the interval fits into the timeTable.
 func (e *Entries) okAccordingToTimeTable(data map[string]interface{}, from, to int64) error {
-	dayN, err := dayName(from)
-	if err != nil {
-		return err
-	}
+	dayN := evenday.DateToDayName(from)
 	prof, err := e.db.ToId(data["professional"].(string))
 	if err != nil {
 		return err
@@ -79,26 +105,7 @@ func (e *Entries) okAccordingToTimeTable(data map[string]interface{}, from, to i
 	if err != nil {
 		return err
 	}
-	ttFilter, err := e.db.NewFilter(e.timeTableColl, nil)
-	if err != nil {
-		return err
-	}
-	timeTableQ := map[string]interface{}{
-		"createdBy": prof,
-	}
-	ttFilter.AddQuery(timeTableQ)
-	ttC, err := ttFilter.Count()
-	if err != nil {
-		return err
-	}
-	if ttC != 1 {
-		return fmt.Errorf("There are multiple timetables.")
-	}
-	timeTables, err := ttFilter.Find()
-	if err != nil {
-		return err
-	}
-	timeTable, err := evenday.GenericToTimeTable(timeTables[0]["timeTable"].([]interface{}))
+	timeTable, err := e.getTimeTable(prof)
 	if err != nil {
 		return err
 	}

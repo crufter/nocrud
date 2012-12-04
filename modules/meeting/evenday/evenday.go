@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sort"
 )
 
 type DayName int
@@ -129,14 +130,28 @@ func (i *Interval) String() string {
 	return i.From.String() + "-" + i.To.String()
 }
 
+func (i *Interval) Eq(j *Interval) bool {
+	return i.From == j.From && i.To == j.To
+}
+
 // Returns true if interval a fits in interval b.
 func InInterval(a, b *Interval) bool {
 	return a.From >= b.From && a.To <= b.To
 }
 
+func TouchesInterval(a, b *Interval) bool {
+	return (a.From > b.From && a.From < b.To) || (a.To > b.From && a.To < b.To) || (b.From > a.From && b.From < a.To) || (b.To > a.From && b.To < a.To)
+}
+
 func NewInterval(from, to Minute) (*Interval, error) {
 	if from > to {
 		return nil, fmt.Errorf("From is greated than to.")
+	}
+	if from >= 1440 || to > 1440 {
+		return nil, fmt.Errorf("Minute can't be greated than 1440.")
+	}
+	if from < 0 || to < 0 {
+		return nil, fmt.Errorf("A minute can't be smaller than 0.")
 	}
 	return &Interval{
 		from,
@@ -186,59 +201,102 @@ func StringToInterval(s string) (*Interval, error) {
 	}, nil
 }
 
+type SortableIntervals []*Interval
+
+// This assumes that no intervals overlap in the list!
+func (s SortableIntervals) Less(i, j int) bool {
+	return s[i].From < s[j].From && s[i].To < s[j].From
+}
+
+func (s SortableIntervals) Swap(i, j int) {
+	temp := s[i]
+	s[i] = s[j]
+	s[j] = temp
+}
+
+func (s SortableIntervals) Len() int {
+	return len(s)
+}
+
 // DaySchedule is a list of intervals when one is open to meetings.
-type DaySchedule []*Interval
+type DaySchedule struct {
+	intervals	[]*Interval
+}
+
+func NewDaySchedule(i []*Interval) *DaySchedule {
+	si := SortableIntervals(i)
+	sort.Sort(si)
+	return &DaySchedule {
+		[]*Interval(si),
+	}
+}
 
 func (d DaySchedule) String() string {
 	intStr := []string{}
-	for _, v := range d {
+	for _, v := range d.intervals {
 		intStr = append(intStr, v.String())
 	}
 	return strings.Join(intStr, ", ")
 }
 
-func GenericToDaySchedule(a []interface{}) (DaySchedule, error) {
+func GenericToDaySchedule(a []interface{}) (*DaySchedule, error) {
 	ret := []*Interval{}
 	for _, v := range a {
 		m, ok := v.(map[string]interface{})
 		if !ok {
-			return DaySchedule{}, fmt.Errorf("Interval is not a map[string]interface{}.")
+			return nil, fmt.Errorf("Interval is not a map[string]interface{}.")
 		}
 		interval, err := GenericToInterval(m["from"], m["to"])
 		if err != nil {
-			return DaySchedule{}, err
+			return nil, err
 		}
 		ret = append(ret, interval)
 	}
-	return DaySchedule(ret), nil
+	return NewDaySchedule(ret), nil
 }
 
 // Converts a daystring "8:00-12:00, 13:00-15:00" to Intervals.
-func StringToDaySchedule(s string) (DaySchedule, error) {
+func StringToDaySchedule(s string) (*DaySchedule, error) {
 	spl := strings.Split(s, ",")
 	ret := []*Interval{}
 	for _, v := range spl {
 		v = strings.Trim(v, " ")
 		interval, err := StringToInterval(v)
 		if err != nil {
-			return DaySchedule{}, err
+			return nil, err
 		}
 		ret = append(ret, interval)
 	}
-	return DaySchedule(ret), nil
+	return NewDaySchedule(ret), nil
+}
+
+func closests(a *Interval, ds *DaySchedule, f func(*Interval, *Interval) bool) bool {
+	l := len(ds.intervals)
+	i := sort.Search(l, func(index int) bool {
+		return ds.intervals[index].To >= a.To	// TRICKY
+	})
+	pos := i
+	if pos == l {
+		pos = l - 1
+	}
+	// TRICKY: Trickery to fix an off by one error given by the fact it's not too intuitive to search for an interval with binary search...
+	verdict := f(a, ds.intervals[pos])
+	if verdict || pos == 0 {
+		return verdict
+	}
+	return f(a, ds.intervals[pos - 1])
 }
 
 // Returns true if an interval fits into a Schedule.
-func InSchedule(a *Interval, sch DaySchedule) bool {
-	for _, v := range sch {
-		if InInterval(a, v) {
-			return true
-		}
-	}
-	return false
+func InDaySchedule(a *Interval, ds *DaySchedule) bool {
+	return closests(a, ds, InInterval)
 }
 
-type TimeTable [14]DaySchedule
+func TouchesDaySchedule(a *Interval, ds *DaySchedule) bool {
+	return closests(a, ds, TouchesInterval)
+}
+
+type TimeTable [14]*DaySchedule
 
 func (tt *TimeTable) String() string {
 	dayStr := []string{}
@@ -290,5 +348,66 @@ func StringToTimeTable(s string) (*TimeTable, error) {
 }
 
 func InTimeTable(dn DayName, i *Interval, tt *TimeTable) bool {
-	return InSchedule(i, tt[dn])
+	return InDaySchedule(i, tt[dn])
+}
+
+// Advises a free Interval in a given day, taking into account both the DaySchedule of the professional, and the
+// Intervals already taken by clients.
+type Advisor struct {
+	BackwardsToo	bool
+	minuteSteps		int
+	howMany			int
+	open			*DaySchedule
+	taken			*DaySchedule
+}
+
+func NewAdvisor(open, taken *DaySchedule) *Advisor {
+	return &Advisor {
+		false,
+		5,
+		2,
+		open,
+		taken,
+	}
+}
+
+func (a *Advisor) Amount(i int) *Advisor {
+	a.howMany = i
+	return a
+}
+
+func (a *Advisor) calc (takenInterval *Interval, amt int) []*Interval {
+	res := []*Interval{}
+	last := &Interval{
+		takenInterval.From,
+		takenInterval.To,
+	}
+	for {
+		last.From = last.From + Minute(amt)
+		last.To = last.To + Minute(amt)
+		f, err := NewInterval(last.From, last.To)
+		if err != nil {
+			break
+		}
+		inOpen := InDaySchedule(last, a.open)
+		inTaken := TouchesDaySchedule(last, a.taken)
+		ok := inOpen && !inTaken
+		if ok {
+			res = append(res, f)
+		}
+		if len(res) >= a.howMany {
+			break
+		}
+	}
+	return res
+}
+
+// Kind of silly as it is.
+func (a *Advisor) Advise(takenInterval *Interval) []*Interval {
+	res := []*Interval{}
+	res = append(res, a.calc(takenInterval, a.minuteSteps)...)
+	if a.BackwardsToo {
+		res = append(res, a.calc(takenInterval, a.minuteSteps * -1)...)
+	}
+	return res
 }
