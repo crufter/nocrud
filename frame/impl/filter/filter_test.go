@@ -3,22 +3,9 @@ package filter_test
 import (
 	"github.com/opesun/nocrud/frame/impl/filter"
 	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/mocks/hooks"
 	"testing"
 )
-
-type MockEvents struct{}
-
-func (m MockEvents) Select(string) iface.Event {
-	return MockEvent{}
-}
-
-type MockEvent struct{}
-
-func (m MockEvent) Fire(params ...interface{}) {
-}
-
-func (m MockEvent) Iterate(ret_rec interface{}, params ...interface{}) {
-}
 
 type TestSet struct {
 	skip      int
@@ -87,13 +74,13 @@ func (t *TestSet) Count(q map[string]interface{}) (int, error) {
 
 func TestMods(t *testing.T) {
 	set := &TestSet{}
-	ev := &MockEvents{}
+	ev := hooks.New()
 	inp := map[string]interface{}{
 		"limit": 10,
 		"skip":  3,
-		"sort":  []string{"x", "y"},
+		"sort":  "date",
 	}
-	f, err := filter.New(set, ev, inp)
+	f, err := filter.New(set, ev, map[string]interface{}{}, inp)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +91,24 @@ func TestMods(t *testing.T) {
 	if set.skip != 3 {
 		t.Fatal(set.limit)
 	}
-	if len(set.sort) != 2 || set.sort[0] != "x" || set.sort[1] != "y" {
+	if len(set.sort) != 1 || set.sort[0] != "date" {
+		t.Fatal(set.sort)
+	}
+}
+
+func TestMultipleSort(t *testing.T) {
+	set := &TestSet{}
+	ev := hooks.New()
+	inp := map[string]interface{}{
+		"limit": 10,
+		"skip":  3,
+		"sort":  []string{ "date", "another" },
+	}
+	_, err := filter.New(set, ev, map[string]interface{}{}, inp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(set.sort) != 1 {
 		t.Fatal(set.sort)
 	}
 }
@@ -112,13 +116,13 @@ func TestMods(t *testing.T) {
 // Sorting could have an effect on FindOne though... For now, we specify it as irrelevant.
 func TestModsSingle(t *testing.T) {
 	set := &TestSet{}
-	ev := &MockEvents{}
+	ev := hooks.New()
 	inp := map[string]interface{}{
 		"limit": 10,
 		"skip":  3,
 		"sort":  []string{"x", "y"},
 	}
-	f, err := filter.New(set, ev, inp)
+	f, err := filter.New(set, ev, map[string]interface{}{}, inp)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,14 +140,14 @@ func TestModsSingle(t *testing.T) {
 
 func TestQueryIn(t *testing.T) {
 	set := &TestSet{}
-	ev := &MockEvents{}
+	ev := hooks.New()
 	inp := map[string]interface{}{
 		"key":   []interface{}{1, 2, 3},
 		"limit": 10,
 		"skip":  3,
 		"sort":  []string{"x", "y"},
 	}
-	f, err := filter.New(set, ev, inp)
+	f, err := filter.New(set, ev, map[string]interface{}{}, inp)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,20 +163,24 @@ func TestQueryIn(t *testing.T) {
 
 func TestCloneQuery(t *testing.T) {
 	set := &TestSet{}
-	ev := &MockEvents{}
+	ev := hooks.New()
 	inp := map[string]interface{}{
 		"crit": "x",
 	}
-	f, err := filter.New(set, ev, inp)
+	f, err := filter.New(set, ev, map[string]interface{}{}, inp)
 	if err != nil {
 		t.Fatal(err)
 	}
 	f1 := f.Clone()
 	f1.AddQuery(map[string]interface{}{
-		"another_crit": "y",
+		"anotherCrit": "y",
 	})
 	f.Find()
-	if len(set.lastQuery) != 1 {
+	if len(set.lastQuery) != 1 || set.lastQuery["crit"] != "x" {
+		t.Fatal(set.lastQuery)
+	}
+	f1.Find()
+	if len(set.lastQuery) != 2 || set.lastQuery["crit"] != "x" || set.lastQuery["anotherCrit"] != "y" {
 		t.Fatal(set.lastQuery)
 	}
 }
@@ -183,13 +191,16 @@ func (m *MockId) String() string {
 	return ""
 }
 
+func (m *MockId) IAmAnId() {
+}
+
 func TestParents(t *testing.T) {
 	set := &TestSet{}
-	ev := &MockEvents{}
+	ev := hooks.New()
 	inp := map[string]interface{}{
 		"crit": "x",
 	}
-	f, err := filter.New(set, ev, inp)
+	f, err := filter.New(set, ev, map[string]interface{}{}, inp)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,11 +224,11 @@ func TestParents(t *testing.T) {
 
 func TestAddQuerySafety(t *testing.T) {
 	set := &TestSet{}
-	ev := &MockEvents{}
+	ev := hooks.New()
 	inp := map[string]interface{}{
 		"crit": "x",
 	}
-	f, err := filter.New(set, ev, inp)
+	f, err := filter.New(set, ev, map[string]interface{}{}, inp)
 	if err != nil {
 		t.Fatal(err)
 	}

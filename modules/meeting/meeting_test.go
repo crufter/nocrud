@@ -5,6 +5,7 @@ import (
 	mongoDb "github.com/opesun/nocrud/frame/impl/db/mongodb"
 	emptyHooks "github.com/opesun/nocrud/frame/mocks/hooks"
 	"github.com/opesun/nocrud/frame/impl/nesteddata"
+	"github.com/opesun/nocrud/modules/meeting/evenday"
 	"labix.org/v2/mgo"
 	"testing"
 	"time"
@@ -112,6 +113,17 @@ func TestTimeTableSave(t *testing.T) {
 		},
 	}
 	err := tt.Save(newTT(), proInp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := newTT().Find()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res) != 1 {
+		t.Fatal(err)
+	}
+	_, err = evenday.GenericToTimeTable(res[0]["timeTable"].([]interface{}))
 	if err != nil {
 		t.Fatal(err)
 	}

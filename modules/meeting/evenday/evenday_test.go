@@ -57,10 +57,10 @@ func testStringToDaySchedule(t *testing.T, dd dsData, iter int) {
 	if err != nil {
 		t.Fatal(iter, err)
 	}
-	if len(ds.intervals) != len(dd.checks) {
+	if len(ds) != len(dd.checks) {
 		t.Fatal(iter, "Bad test data")
 	}
-	for i, v := range ds.intervals {
+	for i, v := range ds {
 		cks := dd.checks[i]
 		fromMin := toMinute(cks[0], cks[1])
 		if v.From != fromMin {

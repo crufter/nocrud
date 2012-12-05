@@ -219,27 +219,23 @@ func (s SortableIntervals) Len() int {
 }
 
 // DaySchedule is a list of intervals when one is open to meetings.
-type DaySchedule struct {
-	intervals	[]*Interval
-}
+type DaySchedule []*Interval
 
-func NewDaySchedule(i []*Interval) *DaySchedule {
+func NewDaySchedule(i []*Interval) DaySchedule {
 	si := SortableIntervals(i)
 	sort.Sort(si)
-	return &DaySchedule {
-		[]*Interval(si),
-	}
+	return []*Interval(si)
 }
 
 func (d DaySchedule) String() string {
 	intStr := []string{}
-	for _, v := range d.intervals {
+	for _, v := range d {
 		intStr = append(intStr, v.String())
 	}
 	return strings.Join(intStr, ", ")
 }
 
-func GenericToDaySchedule(a []interface{}) (*DaySchedule, error) {
+func GenericToDaySchedule(a []interface{}) (DaySchedule, error) {
 	ret := []*Interval{}
 	for _, v := range a {
 		m, ok := v.(map[string]interface{})
@@ -256,7 +252,7 @@ func GenericToDaySchedule(a []interface{}) (*DaySchedule, error) {
 }
 
 // Converts a daystring "8:00-12:00, 13:00-15:00" to Intervals.
-func StringToDaySchedule(s string) (*DaySchedule, error) {
+func StringToDaySchedule(s string) (DaySchedule, error) {
 	spl := strings.Split(s, ",")
 	ret := []*Interval{}
 	for _, v := range spl {
@@ -270,33 +266,33 @@ func StringToDaySchedule(s string) (*DaySchedule, error) {
 	return NewDaySchedule(ret), nil
 }
 
-func closests(a *Interval, ds *DaySchedule, f func(*Interval, *Interval) bool) bool {
-	l := len(ds.intervals)
+func closests(a *Interval, ds DaySchedule, f func(*Interval, *Interval) bool) bool {
+	l := len(ds)
 	i := sort.Search(l, func(index int) bool {
-		return ds.intervals[index].To >= a.To	// TRICKY
+		return ds[index].To >= a.To	// TRICKY
 	})
 	pos := i
 	if pos == l {
 		pos = l - 1
 	}
 	// TRICKY: Trickery to fix an off by one error given by the fact it's not too intuitive to search for an interval with binary search...
-	verdict := f(a, ds.intervals[pos])
+	verdict := f(a, ds[pos])
 	if verdict || pos == 0 {
 		return verdict
 	}
-	return f(a, ds.intervals[pos - 1])
+	return f(a, ds[pos - 1])
 }
 
 // Returns true if an interval fits into a Schedule.
-func InDaySchedule(a *Interval, ds *DaySchedule) bool {
+func InDaySchedule(a *Interval, ds DaySchedule) bool {
 	return closests(a, ds, InInterval)
 }
 
-func TouchesDaySchedule(a *Interval, ds *DaySchedule) bool {
+func TouchesDaySchedule(a *Interval, ds DaySchedule) bool {
 	return closests(a, ds, TouchesInterval)
 }
 
-type TimeTable [14]*DaySchedule
+type TimeTable [14]DaySchedule
 
 func (tt *TimeTable) String() string {
 	dayStr := []string{}
@@ -357,11 +353,11 @@ type Advisor struct {
 	BackwardsToo	bool
 	minuteSteps		int
 	howMany			int
-	open			*DaySchedule
-	taken			*DaySchedule
+	open			DaySchedule
+	taken			DaySchedule
 }
 
-func NewAdvisor(open, taken *DaySchedule) *Advisor {
+func NewAdvisor(open, taken DaySchedule) *Advisor {
 	return &Advisor {
 		false,
 		5,

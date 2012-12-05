@@ -4,6 +4,7 @@ import (
 	"fmt"
 	iface "github.com/opesun/nocrud/frame/interfaces"
 	"github.com/opesun/nocrud/modules/meeting/evenday"
+	"time"
 )
 
 func isProfessional(u iface.User) bool {
@@ -49,22 +50,62 @@ func (e *Entries) getOptions(resource string) {
 	}
 }
 
+func dateToString(u int64) string {
+	return time.Unix(u, 0).Format("2006.01.02")
+}
+
+func (e *Entries) getTaken(a iface.Filter, from int64) (evenday.DaySchedule, error) {
+	b := a.Clone()
+	q := map[string]interface{}{
+		"day": dateToString(from),
+	}
+	b.AddQuery(q)
+	res, err := b.Find()
+	if err != nil {
+		return evenday.DaySchedule{}, err
+	}
+	gen := []interface{}{}
+	for _, v := range res {
+		gen = append(gen, v)
+	}
+	return evenday.GenericToDaySchedule(gen)
+}
+
 // Returns the closest interval on the same day to the given interval.
-func (e *Entries) GetClosest(a iface.Filter, data map[string]interface{}) (evenday.Interval, error) {
+func (e *Entries) GetClosest(a iface.Filter, data map[string]interface{}) (*evenday.Interval, error) {
 	e.getOptions(a.Subject())
-	//prof, err := e.db.ToId(data["professional"].(string))
-	//if err != nil {
-	//	return evenday.Interval{}, err
-	//}
-	//from := data["from"].(int64)
-	//length := data["length"].(int64)
-	//err := e.intervalIsValid(data, length)
-	//if err != nil {
-	//	return err
-	//}
-	//to := from + length * 60
-	//day := evenday.DateToDayname
-	return evenday.Interval{}, nil
+	prof, err := e.db.ToId(data["professional"].(string))
+	if err != nil {
+		return nil, err
+	}
+	from := data["from"].(int64)
+	length := data["length"].(int64)
+	err = e.intervalIsValid(data, length)
+	if err != nil {
+		return nil, err
+	}
+	tt, err := e.getTimeTable(prof)
+	if err != nil {
+		return nil, err
+	}
+	day := evenday.DateToDayName(from)
+	open := tt[day]
+	taken, err := e.getTaken(a, from)
+	if err != nil {
+		return nil, err
+	}
+	adv := evenday.NewAdvisor(open, taken)
+	to := from + length * 60
+	adv.Amount(1)
+	interv, err := evenday.NewInterval(evenday.DateToMinute(from), evenday.DateToMinute(to))
+	if err != nil {
+		return nil, err
+	}
+	ret := adv.Advise(interv)
+	if len(ret) == 0 {
+		return nil, fmt.Errorf("Can't advise you, all day is taken.")
+	}
+	return ret[0], nil
 }
 
 func (e *Entries) getTimeTable(prof iface.Id) (*evenday.TimeTable, error) {
@@ -81,7 +122,7 @@ func (e *Entries) getTimeTable(prof iface.Id) (*evenday.TimeTable, error) {
 		return nil, err
 	}
 	if ttC != 1 {
-		return nil, fmt.Errorf("There are multiple timetables.")
+		return nil, fmt.Errorf("Number of timeTables is not one.")
 	}
 	timeTables, err := ttFilter.Find()
 	if err != nil {
@@ -185,8 +226,10 @@ func (e *Entries) Insert(a iface.Filter, data map[string]interface{}) error {
 	}
 	i := map[string]interface{}{
 		"createdBy": e.userId,
-		"from": data["from"],
+		"from": from,
 		"to": to,
+		"length": length,
+		"day": dateToString(from),
 	}
 	return a.Insert(i)
 }

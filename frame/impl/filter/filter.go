@@ -101,15 +101,15 @@ func processQuery(hooks iface.Hooks, coll string, scheme, inp map[string]interfa
 	if inp == nil {
 		inp = map[string]interface{}{}
 	}
-	int_sch := map[string]interface{}{
+	intSch := map[string]interface{}{
 		"type": "int",
 	}
 	sch := map[string]interface{}{
 		//"parentf": 1,
 		"sort":  1,
-		"skip":  int_sch,
-		"limit": int_sch,
-		"page":  int_sch,
+		"skip":  intSch,
+		"limit": intSch,
+		"page":  intSch,
 	}
 	ex, err := sanitize.New(sch)
 	if err != nil {
@@ -138,12 +138,15 @@ func processQuery(hooks iface.Hooks, coll string, scheme, inp map[string]interfa
 		page := int(dat["page"].(int64))
 		mods.skip = (page - 1) * mods.limit
 	}
+	if dat["sort"] != nil {
+		mods.sort = []string{ dat["sort"].(string) }
+	}
 	d.mods = mods
 	if hooks != nil {
 		hooks.Select("ProcessQuery").Fire(inp) // We should let the subscriber now the subject name maybe.
 		hooks.Select(coll + "ProcessQuery").Fire(inp)
 	}
-	if scheme != nil {
+	if scheme != nil && len(scheme) != 0 {
 		ex, err = sanitize.New(scheme)
 		if err != nil {
 			panic(err)
@@ -197,17 +200,17 @@ func toQuery(a map[string]interface{}) map[string]interface{} {
 }
 
 func (f *Filter) Clone() iface.Filter {
-	//panic("Clone is not implemented yet.")
-	//q := copyMap()
-	//p := copySlice()
-	//return &Filter{
-	//	set:			f.set,
-	//	mods:			&*d.mods,
-	//	parentField:	d.ParentField,
-	//	query:			d.query
-	//	parents:		d.parents
-	//}
-	return f
+	newM := map[string]interface{}{}
+	for i, v := range f.query {
+		newM[i] = v
+	}
+	return &Filter{
+		set:			f.set,
+		mods:			&*f.mods,
+		parentField:	f.parentField,
+		query:			newM,
+		parents:		f.parents,
+	}
 }
 
 func (f *Filter) Modifiers() iface.Modifiers {
