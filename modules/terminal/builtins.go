@@ -7,14 +7,18 @@ import (
 	"reflect"
 )
 
-func latestOptdoc(db iface.Db) (iface.Document, error) {
+func latestOptdoc(db iface.Db) iface.Document {
 	fil, err := db.NewFilter("options", map[string]interface{}{
 		"sort": "-created",
 	})
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return fil.SelectOne()
+	o, err := fil.SelectOne()
+	if err != nil {
+		panic(err)
+	}
+	return o
 }
 
 func (c *C) install(resource, module string, ignore bool) error {
@@ -22,10 +26,8 @@ func (c *C) install(resource, module string, ignore bool) error {
 	if !modu.Exists() {
 		return fmt.Errorf("Can't install nonexisting module \"%v\".", module)
 	}
-	odoc, err := latestOptdoc(c.ctx.Db())
-	if err != nil {
-		return err
-	}
+	odoc := latestOptdoc(c.ctx.Db())
+	var err error
 	if !ignore {
 		upd := map[string]interface{}{
 			"$addToSet": map[string]interface{}{
@@ -37,12 +39,18 @@ func (c *C) install(resource, module string, ignore bool) error {
 			return err
 		}
 	}
-	ret := func(r error) {
-		err = r
-	}
 	inst := modu.Instance()
 	if inst.HasMethod("Install") {
+		ret := func(r error) {
+			err = r
+		}
 		inst.Method("Install").Call(ret, odoc, resource)
+		if err != nil {
+			return err
+		}
+	}
+	if inst.HasMethod("InstallScript") {
+		err = c.runScript(inst.Method("InstallScript"), resource)
 	}
 	return err
 }
@@ -52,12 +60,25 @@ func (c *C) installRaw(module string) error {
 	return c.install("", module, true)
 }
 
+func (c *C) runScript(me iface.Method, resource string) error {
+	var scriptStr string
+	ret := func(s string) {
+		scriptStr = s
+	}
+	me.Call(ret, resource)
+	_, err := c.Execute(map[string]interface{}{
+		"script": scriptStr,
+	})
+	return err
+}
+
 func (c *C) uninstall(resource, module string) error {
 	modu := c.ctx.Conducting().Hooks().Module(module)
 	if !modu.Exists() {
 		return fmt.Errorf("Can't install nonexisting module \"%v\".", module)
 	}
-	odoc, err := latestOptdoc(c.ctx.Db())
+	odoc := latestOptdoc(c.ctx.Db())
+	var err error
 	if err != nil {
 		return err
 	}
@@ -70,12 +91,18 @@ func (c *C) uninstall(resource, module string) error {
 	if err != nil {
 		return err
 	}
-	ret := func(r error) {
-		err = r
-	}
 	inst := modu.Instance()
 	if inst.HasMethod("Uninstall") {
+		ret := func(r error) {
+			err = r
+		}
 		inst.Method("Uninstall").Call(ret, odoc, resource)
+		if err != nil {
+			return err
+		}
+	}
+	if inst.HasMethod("UninstallScript") {
+		err = c.runScript(inst.Method("UninstallScript"), resource)
 	}
 	return err
 }
@@ -194,14 +221,10 @@ func findCommand(s string) []string {
 	return nil
 }
 
-// 
 func (c *C) setScheme(resource, jsn string) error {
-	doc, err := latestOptdoc(c.ctx.Db())
-	if err != nil {
-		return err
-	}
+	doc := latestOptdoc(c.ctx.Db())
 	var v interface{}
-	err = json.Unmarshal([]byte(jsn), &v)
+	err := json.Unmarshal([]byte(jsn), &v)
 	if err != nil {
 		return fmt.Errorf("Json not valid:" + err.Error())
 	}
@@ -213,6 +236,47 @@ func (c *C) setScheme(resource, jsn string) error {
 		},
 	}
 	return doc.Update(upd)
+}
+
+func unserVal(value interface{}) interface{} {
+	if vStr, ok := value.(string); ok {
+		var v interface{}
+		err := json.Unmarshal([]byte(vStr), &v)
+		if err == nil {
+			return v
+		}
+	}
+	return value
+}
+
+func (c *C) setNounAttr(noun, attr string, value interface{}) error {
+	v := unserVal(value)
+	o := latestOptdoc(c.ctx.Db())
+	return o.Update(map[string]interface{}{
+		"$set": map[string]interface{}{
+			fmt.Sprintf("nouns.%v.%v", noun, attr): v,
+		},
+	})
+}
+
+func (c *C) setVerbAttr(noun, verb, attr string, value interface{}) error {
+	v := unserVal(value)
+	o := latestOptdoc(c.ctx.Db())
+	return o.Update(map[string]interface{}{
+		"$set": map[string]interface{}{
+			fmt.Sprintf("nouns.%v.verb.%v.%v", noun, verb, attr): v,
+		},
+	})
+}
+
+func (c *C) setAttr(a string, value interface{}) error {
+	v := unserVal(value)
+	o := latestOptdoc(c.ctx.Db())
+	return o.Update(map[string]interface{}{
+		"$set": map[string]interface{}{
+			a: v,
+		},
+	})
 }
 
 func (c *C) builtins() map[string]interface{} {
@@ -241,6 +305,15 @@ func (c *C) builtins() map[string]interface{} {
 		},
 		"installRaw": func(module string) error {
 			return c.installRaw(module)
+		},
+		"setNounAttr": func(a, b string, c1 interface{}) error {
+			return c.setNounAttr(a, b, c1)
+		},
+		"setVerbAttr": func(a, b, c1 string, d interface{}) error {
+			return c.setVerbAttr(a, b, c1, d)
+		},
+		"setAttr": func(a string, b interface{}) error {
+			return c.setAttr(a, b)
 		},
 	}
 	f["help"] = func(fname string) string {

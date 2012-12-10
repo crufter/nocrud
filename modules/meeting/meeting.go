@@ -35,6 +35,21 @@ func (e *Entries) Init(ctx iface.Context) {
 	e.intervalColl = "intervals"
 }
 
+// This way professionals will only see entries posted for them,
+// and users will only see entries posted by them.
+// However, a professional will not be able to act as a user: he wont see entries posted by him, posted for other professionals.
+func (e *Entries) TopModFilter(a iface.Filter) {
+	if e.userIsProfessional {
+		a.AddQuery(map[string]interface{}{
+			"forProfessional": e.userId,
+		})
+	} else {
+		a.AddQuery(map[string]interface{}{
+			"createdBy": e.userId,
+		})
+	}
+}
+
 func (e *Entries) getOptions(resource string) {
 	if e.gotOptions {
 		return
@@ -80,7 +95,7 @@ func (e *Entries) GetClosest(a iface.Filter, data map[string]interface{}) (*even
 	}
 	from := data["from"].(int64)
 	length := data["length"].(int64)
-	err = e.intervalIsValid(data, length)
+	err = e.intervalIsValid(data, prof, length)
 	if err != nil {
 		return nil, err
 	}
@@ -184,11 +199,7 @@ func (e *Entries) othersAlreadyTook(a iface.Filter, from, to int64) error {
 	return nil
 }
 
-func (e *Entries) intervalIsValid(data map[string]interface{}, length int64) error {
-	prof, err := e.db.ToId(data["professional"].(string))
-	if err != nil {
-		return err
-	}
+func (e *Entries) intervalIsValid(data map[string]interface{}, prof iface.Id, length int64) error {
 	q := map[string]interface{}{
 		"professional": prof,
 		"length": length,
@@ -211,7 +222,11 @@ func (e *Entries) Insert(a iface.Filter, data map[string]interface{}) error {
 	e.getOptions(a.Subject())
 	from := data["from"].(int64)
 	length := data["length"].(int64)
-	err := e.intervalIsValid(data, length)
+	prof, err := e.db.ToId(data["professional"].(string))
+	if err != nil {
+		return err
+	}
+	err = e.intervalIsValid(data, prof, length)
 	if err != nil {
 		return err
 	}
@@ -230,6 +245,7 @@ func (e *Entries) Insert(a iface.Filter, data map[string]interface{}) error {
 		"to": to,
 		"length": length,
 		"day": dateToString(from),
+		"forProfessional": prof,
 	}
 	return a.Insert(i)
 }
@@ -238,19 +254,10 @@ func (e *Entries) Delete(a iface.Filter) error {
 	return nil
 }
 
-// With the current design, a professional can't view his own entries posted to account of an other professional.
-func (e *Entries) ProcessQuery(q map[string]interface{}) {
-	if e.userIsProfessional {
-		q["professional"] = e.userId
-	} else {
-		q["createdBy"] = e.userId
-	}
-}
-
 func (e *Entries) Install(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$addToSet": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{}{"entries", "ProcessQuery"},
+			"Hooks." + resource + "TopModFilter": []interface{}{"meeting.entries", "TopModFilter"},
 		},
 	}
 	return o.Update(upd)
@@ -259,7 +266,7 @@ func (e *Entries) Install(o iface.Document, resource string) error {
 func (e *Entries) Uninstall(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{}{"entries", "ProcessQuery"},
+			"Hooks." + resource + "TopModFilter": []interface{}{"meeting.entries", "TopModFilter"},
 		},
 	}
 	return o.Update(upd)
@@ -314,14 +321,23 @@ func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
 	return fmt.Errorf("Too many timetables in the database.")
 }
 
-func (tt *TimeTable) ProcessQuery(q map[string]interface{}) {
-	q["createdBy"] = tt.userId
+func (tt *TimeTable) TopModFilter(a iface.Filter) {
+	if tt.userIsProfessional {
+		a.AddQuery(map[string]interface{}{
+			"forProfessional": tt.userId,
+		})
+	} else {
+		a.AddQuery(map[string]interface{}{
+			// Hehe.
+			"clientsShouldNotViewTimeTables": true,
+		})
+	}
 }
 
 func (tt *TimeTable) Install(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$addToSet": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{}{"timetable", "ProcessQuery"},
+			"Hooks." + resource + "TopModFilter": []interface{}{"meeting.timeTable", "TopModFilter"},
 		},
 	}
 	return o.Update(upd)
@@ -330,7 +346,7 @@ func (tt *TimeTable) Install(o iface.Document, resource string) error {
 func (tt *TimeTable) Uninstall(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
-			"Hooks." + resource + "ProcessQuery": []interface{}{"timetable", "ProcessQuery"},
+			"Hooks." + resource + "TopModFilter": []interface{}{"meeting.timeTable", "TopModFilter"},
 		},
 	}
 	return o.Update(upd)

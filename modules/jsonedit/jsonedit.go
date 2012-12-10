@@ -69,3 +69,7 @@ func (c *C) Edit(a iface.Filter) (string, error) {
 	}
 	return string(marsh), nil
 }
+
+func (c *C) InstallScript(resource string) string {
+	return `setScheme "` + resource +`" "{\"json\":{\"type\":\"string\",\"must\":true}}"`
+}

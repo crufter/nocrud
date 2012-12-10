@@ -41,8 +41,35 @@ func (h *HighLev) createDesc() (*glue.Descriptor, error) {
 	return desc, nil
 }
 
+func (h *HighLev) userChecks(user map[string]interface{}) error {
+	verbSpec, ok := jsonp.GetM(h.nouns, fmt.Sprint("%v.verbs.%v.userCrit", h.desc.Sentence.Noun, h.desc.Sentence.Verb))
+	if ok {
+		_, err := sanitize.Fast(verbSpec, user)
+		return err
+	}
+	nounSpec, ok := jsonp.GetM(h.nouns, fmt.Sprintf("%v.userCrit", h.desc.Sentence.Noun))
+	if !ok {
+		return nil
+	}
+	_, err := sanitize.Fast(nounSpec, user)
+	return err
+}
+
+func (h *HighLev) ownLev() (int, bool) {
+	verbL, ok := jsonp.Get(h.nouns, fmt.Sprintf("%v.verbs.%v.ownLevel", h.desc.Sentence.Noun, h.desc.Sentence.Verb))
+	if ok {
+		return numcon.IntP(verbL), true
+	}
+	nounL, ok := jsonp.GetM(h.nouns, fmt.Sprintf("%v.ownLevel", h.desc.Sentence.Noun))
+	if ok {
+		return numcon.IntP(nounL), true
+	}
+	return 0, false
+}
+
 func (h *HighLev) Run(db iface.Db, usr iface.User, defminlev int) ([]interface{}, error) {
 	desc := h.desc
+	// Authentication.
 	levi, ok := jsonp.Get(h.nouns, fmt.Sprintf("%v.verbs.%v.level", desc.Sentence.Noun, desc.Sentence.Verb))
 	if !ok {
 		levi = defminlev
@@ -51,12 +78,31 @@ func (h *HighLev) Run(db iface.Db, usr iface.User, defminlev int) ([]interface{}
 	if usr.Level() < lev {
 		return nil, fmt.Errorf("Not allowed.")
 	}
+	err := h.userChecks(usr.Data())
+	if err != nil {
+		return nil, err
+	}
 	filterCreator := func(c string, input map[string]interface{}) (iface.Filter, error) {
 		return db.NewFilter(c, input)
 	}
 	inp, data, err := desc.CreateInputs(filterCreator)
 	if err != nil {
 		return nil, err
+	}
+	ownLev, own := h.ownLev()
+	if len(inp) > 0 {
+		if f, ok := inp[0].(iface.Filter); ok {
+			// This hook allows you to modify a filter before a verb accesses it.
+			h.hooks.Select("TopModFilter").Fire(f)
+			h.hooks.Select(f.Subject() + "TopModFilter").Fire(f)
+		}
+		if own && lev <= ownLev {
+			if f, ok := inp[0].(iface.Filter); ok {
+				f.AddQuery(map[string]interface{}{
+					"createdBy": usr.Id(),
+				})
+			}
+		}
 	}
 	if data != nil {
 		if desc.Sentence.Noun != "options" {
