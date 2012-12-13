@@ -52,7 +52,10 @@ func (d *Display) Do(files []string) error {
 }
 
 func (d *Display) publishForm() {
-	d.ctx.ViewContext().Publish("form", d.ctx.NonPortable().Params())
+	vctx := d.ctx.ViewContext()
+	vctx.Publish("form", d.ctx.NonPortable().Params())
+	vctx.Publish("modifiers", d.ctx.Options().Modifiers().All())
+	vctx.Publish("user", d.ctx.User())
 }
 
 func (d *Display) localizeContext() error {

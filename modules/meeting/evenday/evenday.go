@@ -294,7 +294,7 @@ func TouchesDaySchedule(a *Interval, ds DaySchedule) bool {
 
 type TimeTable [14]DaySchedule
 
-func (tt *TimeTable) String() string {
+func (tt TimeTable) String() string {
 	dayStr := []string{}
 	for _, v := range tt {
 		dayStr = append(dayStr, v.String())
@@ -303,47 +303,49 @@ func (tt *TimeTable) String() string {
 }
 
 // Converts from JSON-like representation.
-func GenericToTimeTable(g []interface{}) (*TimeTable, error) {
-	ret := &TimeTable{}
+func GenericToTimeTable(g []interface{}) (TimeTable, error) {
+	empty := TimeTable{}
+	ret := TimeTable{}
 	if len(g) != 14 {
-		return nil, fmt.Errorf("Bad format.")
+		return empty, fmt.Errorf("Bad format.")
 	}
 	for i, v := range g {
 		sl, ok := v.([]interface{})
 		if !ok {
-			return nil, fmt.Errorf("DaySchedule is not an []interface.")
+			return empty, fmt.Errorf("DaySchedule is not an []interface.")
 		}
 		ds, err := GenericToDaySchedule(sl)
 		if err != nil {
-			return nil, err
+			return empty, err
 		}
 		ret[i] = ds
 	}
 	return ret, nil
 }
 
-func StringsToTimeTable(s []string) (*TimeTable, error) {
-	tt := &TimeTable{}
+func StringsToTimeTable(s []string) (TimeTable, error) {
+	empty := TimeTable{}
+	tt := TimeTable{}
 	for i, v := range s {
 		v = strings.Trim(v, " \\n")
 		ds, err := StringToDaySchedule(v)
 		if err != nil {
-			return nil, err
+			return empty, err
 		}
 		tt[i] = ds
 	}
 	return tt, nil
 }
 
-func StringToTimeTable(s string) (*TimeTable, error) {
+func StringToTimeTable(s string) (TimeTable, error) {
 	sl := strings.Split(s, ".")
 	if len(s) != 14 {
-		return nil, fmt.Errorf("Not a complete timetable.")
+		return TimeTable{}, fmt.Errorf("Not a complete timetable.")
 	}
 	return StringsToTimeTable(sl)
 }
 
-func InTimeTable(dn DayName, i *Interval, tt *TimeTable) bool {
+func InTimeTable(dn DayName, i *Interval, tt TimeTable) bool {
 	return InDaySchedule(i, tt[dn])
 }
 

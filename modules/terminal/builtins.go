@@ -279,6 +279,11 @@ func (c *C) setAttr(a string, value interface{}) error {
 	})
 }
 
+func (c *C) resetSite() error {
+	o := latestOptdoc(c.ctx.Db())
+	return o.Update(map[string]interface{}{})
+}
+
 func (c *C) builtins() map[string]interface{} {
 	f := map[string]interface{}{
 		"install": func(resource, module string) error {
@@ -297,6 +302,9 @@ func (c *C) builtins() map[string]interface{} {
 		"saveOpt":  saveOpt,
 		"revert":   revert,
 		"findComm": findCommand,
+		"resetSite": func() error {
+			return c.resetSite()
+		},
 		"verbs": func(s string) ([]Verb, error) {
 			return c.verbs(s)
 		},

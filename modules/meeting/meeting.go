@@ -123,10 +123,11 @@ func (e *Entries) GetClosest(a iface.Filter, data map[string]interface{}) (*even
 	return ret[0], nil
 }
 
-func (e *Entries) getTimeTable(prof iface.Id) (*evenday.TimeTable, error) {
+func (e *Entries) getTimeTable(prof iface.Id) (evenday.TimeTable, error) {
 	ttFilter, err := e.db.NewFilter(e.timeTableColl, nil)
+	empty := evenday.TimeTable{}
 	if err != nil {
-		return nil, err
+		return empty, err
 	}
 	timeTableQ := map[string]interface{}{
 		"createdBy": prof,
@@ -134,18 +135,18 @@ func (e *Entries) getTimeTable(prof iface.Id) (*evenday.TimeTable, error) {
 	ttFilter.AddQuery(timeTableQ)
 	ttC, err := ttFilter.Count()
 	if err != nil {
-		return nil, err
+		return empty, err
 	}
 	if ttC != 1 {
-		return nil, fmt.Errorf("Number of timeTables is not one.")
+		return empty, fmt.Errorf("Number of timeTables is not one.")
 	}
 	timeTables, err := ttFilter.Find()
 	if err != nil {
-		return nil, err
+		return empty, err
 	}
 	timeTable, err := evenday.GenericToTimeTable(timeTables[0]["timeTable"].([]interface{}))
 	if err != nil {
-		return nil, err
+		return empty, err
 	}
 	return timeTable, nil
 }
@@ -318,13 +319,17 @@ func (tt *TimeTable) Save(a iface.Filter, data map[string]interface{}) error {
 		}
 		return doc.Update(m)
 	}
-	return fmt.Errorf("Too many timetables in the database.")
+	_, err = a.RemoveAll()
+	if err != nil {
+		return err
+	}
+	return a.Insert(m)
 }
 
 func (tt *TimeTable) TopModFilter(a iface.Filter) {
 	if tt.userIsProfessional {
 		a.AddQuery(map[string]interface{}{
-			"forProfessional": tt.userId,
+			"createdBy": tt.userId,
 		})
 	} else {
 		a.AddQuery(map[string]interface{}{
@@ -334,10 +339,24 @@ func (tt *TimeTable) TopModFilter(a iface.Filter) {
 	}
 }
 
+func (tt *TimeTable) AddTemplateBuiltin(b map[string]interface{}) {
+	b["toTimeTable"] = evenday.GenericToTimeTable
+}
+
 func (tt *TimeTable) Install(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$addToSet": map[string]interface{}{
 			"Hooks." + resource + "TopModFilter": []interface{}{"meeting.timeTable", "TopModFilter"},
+			"Hooks.AddTemplateBuiltin": []interface{}{"meeting.timeTable"},
+		},
+		"$set": map[string]interface{}{
+			"nouns." + resource + ".verbs.Save.input": map[string]interface{}{
+				"timeTable": map[string]interface{}{
+					"type": "any",
+					"slice": true,
+					"must": true,
+				},
+			},
 		},
 	}
 	return o.Update(upd)
@@ -347,6 +366,7 @@ func (tt *TimeTable) Uninstall(o iface.Document, resource string) error {
 	upd := map[string]interface{}{
 		"$pull": map[string]interface{}{
 			"Hooks." + resource + "TopModFilter": []interface{}{"meeting.timeTable", "TopModFilter"},
+			"Hooks.AddTemplateBuiltin": []interface{}{"meeting.timeTable"},
 		},
 	}
 	return o.Update(upd)

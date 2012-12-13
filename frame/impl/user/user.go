@@ -2,6 +2,7 @@ package user
 
 import (
 	iface "github.com/opesun/nocrud/frame/interfaces"
+	"github.com/opesun/nocrud/frame/mocks/document"
 	"github.com/opesun/numcon"
 	"strings"
 )
@@ -81,7 +82,7 @@ func emptyUser(client iface.Client) *User {
 		langs = []string{"en"}
 	}
 	return &User{
-		nil,
+		document.NewEmpty(),
 		0,
 		langs,
 	}

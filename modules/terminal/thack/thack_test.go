@@ -56,3 +56,19 @@ func TestError(t *testing.T) {
 		t.Fatal(s, len(s))
 	}
 }
+
+func TestEmptyLines(t *testing.T) {
+	f := map[string]interface{}{
+		"testFunc": func() error {
+			return nil
+		},
+	}
+	script := "testFunc\ntestFunc"
+	s, err := thack.New().Funcs(f).Execute(script)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s != "" {
+		t.Fatal(s, len(s))
+	}
+}

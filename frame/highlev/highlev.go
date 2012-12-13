@@ -41,17 +41,17 @@ func (h *HighLev) createDesc() (*glue.Descriptor, error) {
 	return desc, nil
 }
 
-func (h *HighLev) userChecks(user map[string]interface{}) error {
+func (h *HighLev) userChecks(user iface.User) error {
 	verbSpec, ok := jsonp.GetM(h.nouns, fmt.Sprint("%v.verbs.%v.userCrit", h.desc.Sentence.Noun, h.desc.Sentence.Verb))
 	if ok {
-		_, err := sanitize.Fast(verbSpec, user)
+		_, err := sanitize.Fast(verbSpec, user.Data())
 		return err
 	}
 	nounSpec, ok := jsonp.GetM(h.nouns, fmt.Sprintf("%v.userCrit", h.desc.Sentence.Noun))
 	if !ok {
 		return nil
 	}
-	_, err := sanitize.Fast(nounSpec, user)
+	_, err := sanitize.Fast(nounSpec, user.Data())
 	return err
 }
 
@@ -78,7 +78,7 @@ func (h *HighLev) Run(db iface.Db, usr iface.User, defminlev int) ([]interface{}
 	if usr.Level() < lev {
 		return nil, fmt.Errorf("Not allowed.")
 	}
-	err := h.userChecks(usr.Data())
+	err := h.userChecks(usr)
 	if err != nil {
 		return nil, err
 	}
@@ -154,19 +154,19 @@ func (h *HighLev) Sub(actionOrNoun string, p map[string]interface{}) (*HighLev, 
 	return New(h.hooks, form.ActionPath, h.nouns, params)
 }
 
+// Currently, Verbs having no input scheme will receive the incoming data untouched.
 func (h *HighLev) validate(noun, verb string, data map[string]interface{}) (map[string]interface{}, error) {
-	scheme_map, ok := jsonp.GetM(h.nouns, fmt.Sprintf("%v.verbs.%v.input", noun, verb))
-	if !ok {
-		return nil, fmt.Errorf("Can't find scheme for %v %v.", noun, verb)
-	}
-	ex, err := sanitize.New(scheme_map)
-	if err != nil {
-		return nil, err
-	}
-	h.hooks.Select("SanitizerMangler").Fire(ex)
-	data, err = ex.Extract(data)
-	if err != nil {
-		return nil, err
+	schemeMap, ok := jsonp.GetM(h.nouns, fmt.Sprintf("%v.verbs.%v.input", noun, verb))
+	if ok {
+		ex, err := sanitize.New(schemeMap)
+		if err != nil {
+			return nil, err
+		}
+		h.hooks.Select("SanitizerMangler").Fire(ex)
+		data, err = ex.Extract(data)
+		if err != nil {
+			return nil, err
+		}
 	}
 	h.hooks.Select("SanitizedDataMangler").Fire(data)
 	return data, nil

@@ -1,7 +1,5 @@
 package display
 
-// All functions which can be called from templates reside here.
-
 import (
 	"fmt"
 	"github.com/opesun/jsonp"
@@ -17,9 +15,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"encoding/json"
 )
 
-func get(dat map[string]interface{}, s ...string) interface{} {
+func getMap(dat map[string]interface{}, s ...string) interface{} {
 	if len(s) > 0 {
 		if len(s[0]) > 0 {
 			if string(s[0][0]) == "$" {
@@ -256,15 +255,8 @@ func pager(ctx iface.Context, pagestr string, count, limit int) []paging.Pelem {
 	return nav
 }
 
-func elem(s interface{}, memb int64) interface{} {
-	// Hotfix, we need to use reflection here.
-	switch t := s.(type) {
-	case []string:
-		return t[memb]
-	case []interface{}:
-		return t[memb]
-	}
-	return "Error: unkown slice type."
+func index(s interface{}, index int) interface{} {
+	return reflect.ValueOf(s).Index(index).Interface()
 }
 
 func inSlice(s []interface{}, b interface{}) bool {
@@ -321,6 +313,32 @@ func concat(s ...string) string {
 	return strings.Join(s, "")
 }
 
+// Works with array, slice, map, chan, string.
+func _len(a interface{}) int {
+	return reflect.ValueOf(a).Len()
+}
+
+func setMap(a map[string]interface{}, b string, c interface{}) error {
+	a[b] = c
+	return nil	// We must have a return value according to html/template
+}
+
+func newMap() map[string]interface{} {
+	return map[string]interface{}{}
+}
+
+func newSlice() []interface{} {
+	return []interface{}{}
+}
+
+func indentedJSON(a interface{}) string {
+	b, err := json.MarshalIndent(a, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
 // We must recreate this map each time because map write is not threadsafe.
 // Write will happen when a hook modifies the map (hook call is not implemented yet).
 func builtins(ctx iface.Context) map[string]interface{} {
@@ -328,8 +346,9 @@ func builtins(ctx iface.Context) map[string]interface{} {
 	user := ctx.User()
 	ret := map[string]interface{}{
 		"get": func(s ...string) interface{} {
-			return get(viewCtx, s...)
+			return getMap(viewCtx, s...)
 		},
+		"getMap": getMap,
 		"date": date,
 		"isStranger": func() bool {
 			return user.Level() == 0
@@ -343,14 +362,16 @@ func builtins(ctx iface.Context) map[string]interface{} {
 		"isAdmin": func() bool {
 			return user.Level() >= 300
 		},
-		"isMap":       isMap,
-		"eq":          eq,
-		"html":        html,
-		"formatFloat": formatFloat,
-		"fallback":    fallback,
-		"typeOf":      typeOf,
-		"sameKind":    sameKind,
-		"title":       strings.Title,
+		"isMap":       	isMap,
+		"eq":          	eq,
+		"html":        	html,
+		"formatFloat":	formatFloat,
+		"newMap": 		newMap,
+		"newSlice": 	newSlice,
+		"fallback":    	fallback,
+		"typeOf":      	typeOf,
+		"sameKind":    	sameKind,
+		"title":       	strings.Title,
 		"url": func(action_name string, i ...interface{}) string {
 			return _url(ctx, action_name, i...)
 		},
@@ -365,7 +386,7 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			return getList(ctx, str, params...)
 		},
 		"concat": concat,
-		"elem":   elem,
+		"index": index,
 		"pager": func(page interface{}, count, limited int) []paging.Pelem {
 			var pagestr string
 			if page == nil {
@@ -375,10 +396,13 @@ func builtins(ctx iface.Context) map[string]interface{} {
 			}
 			return pager(ctx, pagestr, count, limited)
 		},
+		"len": _len,
+		"setMap": setMap,
 		"inSlice": inSlice,
 		"hook": func(hookName string) *hook {
 			return selectHook(ctx, hookName)
 		},
+		"indentedJSON": indentedJSON,
 	}
 	ctx.Conducting().Hooks().Select("AddTemplateBuiltin").Fire(ret)
 	return ret
