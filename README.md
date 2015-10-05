@@ -130,7 +130,7 @@ import(
 type C struct{}
 
 func (c *C) Delete(a iface.Filter) error {
-	// ... We can of course insert custom bussiness logic here.
+	// ... We can of course insert custom business logic here.
 	_, err := a.RemoveAll()
 	return err
 }
